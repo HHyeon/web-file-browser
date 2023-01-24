@@ -1,0 +1,87 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title id="title">hello</title>
+    
+<style>
+    html {
+        margin: 0px;
+    }
+
+    body {
+        background-color: rgb(25, 25, 25);
+        color: aliceblue;
+        margin: 0px;
+    }
+
+    .imagepanel {
+        position: absolute;left: 0px;top: 0px;
+        width: 98%;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        justify-items: center;
+        align-items: center;
+    }
+
+    .imageviewlayout {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        display: none;
+        text-align: center;
+    }
+
+    .imageview {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .imageitem {
+        max-width: 98%;
+        max-height: 98%;
+        /* width: 98%;
+        height: 98%; */
+        object-fit: cover;
+        object-position: center;
+        padding: 5px;
+    }
+    
+    .textitem {
+        width: 90%;
+        padding: 5px;
+        text-align: center;
+    }
+
+    .textitem:hover {
+        background: silver;
+    }
+
+    .videoitem {
+        width: 90%;
+        height: 100%;
+        padding: 5px;
+        text-align: center;
+    }
+    
+    .videoitem:hover {
+        background: silver;
+    }
+
+</style>
+</head>
+
+<body>
+
+    <div class="imagepanel" id="imagepanel"></div>
+    <div class="imageviewlayout" id="imageviewlayout" >
+        <img class="imageview" id="imageview"></img>
+    </div>
+    
+    
+
+
+    <script src="script.js"></script>
+</body>
+</html> 
