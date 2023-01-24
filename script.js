@@ -3,6 +3,27 @@ const urlStr = window.location.href;
 const url = new URL(urlStr);
 const urlParams = url.searchParams;
 const path = urlParams.get('p');
+const rootdrv="drv0";
+
+var ctrldown = 0;
+
+document.addEventListener("keydown", function(e) {
+    if(e.key == "Control") {
+        ctrldown = 1;
+    }
+});
+document.addEventListener("keyup", function(e) {
+    if(e.key == "Control") {
+        ctrldown = 0;
+    }
+});
+
+if(path == null)
+{
+    const nextlink = `?p=${rootdrv}`;
+    console.log(nextlink);
+    location.replace(nextlink);
+}
 
 window.addEventListener("scroll", function(element) {
     if(window.innerHeight + window.scrollY >= imagepanel.scrollHeight)
@@ -12,11 +33,9 @@ window.addEventListener("scroll", function(element) {
 });
 
 window.addEventListener("keyup", function(element) {
-    console.log(element.key);
-
     if(element.key == 'w')
     {
-        if(path != "drv0")
+        if(path != rootdrv)
         {
             var nextpath = path.substring(0, path.lastIndexOf('/'));
     
@@ -28,8 +47,11 @@ window.addEventListener("keyup", function(element) {
             location.replace(nextlink);
         }
     }
-})
+    else if(element.key == 'r')
+    {
 
+    }
+});
 
 function dirseek(path) {
     var xmlhttp = new XMLHttpRequest();
@@ -37,7 +59,7 @@ function dirseek(path) {
     xmlhttp.open("GET", url, false);
     xmlhttp.send(null);
     return xmlhttp.responseText;
-}
+};
 
 var imageviewlayout = document.getElementById("imageviewlayout");
 var imageview = document.getElementById("imageview");
@@ -47,18 +69,17 @@ imageviewlayout.addEventListener("click", function() {
     imageview.style.display = "none";
 }) ;
 
-var borderpast=null;
 function imgclicked(element) {
+    console.log("imgclicked");
 
-    if(borderpast != element)
-    {
-        var img=document.getElementById(element);
+    var newpage = `./imgview.html`;
 
-        imageview.src=img.src;
-        imageview.style.display = "block";
-        imageviewlayout.style.display = "block";
-        borderpast = element;
-    }
+    window.open(newpage, "_blank");
+
+    // var img=document.getElementById(element);
+    // imageview.src=img.src;
+    // imageview.style.display = "block";
+    // imageviewlayout.style.display = "block";
 }
 
 function genimage(ididx, srcpath) {
@@ -74,9 +95,19 @@ function folderclicked(element) {
     // console.log(`id : ${id}`);
     var nextpath = folderslist.find(x=> x.id == id).data;
     
-    const nextlink = `?p=${nextpath}`;
-    console.log(nextlink);
-    location.replace(nextlink);
+    if(ctrldown)
+    {
+        const nextlink = `?p=${nextpath}`;
+        console.log(nextlink);
+        window.open(nextlink, "_blank");
+    }
+    else
+    {
+        const nextlink = `?p=${nextpath}`;
+        console.log(nextlink);
+        location.replace(nextlink);
+    }
+
 }
 
 function genfolder(ididx, path) {
@@ -90,23 +121,34 @@ function genfolder(ididx, path) {
     
     var html=`
     <div id=id${ididx} class="textitem" onclick="folderclicked(this.id)">
-    <h3>Directory</h3>
-    <h5>${val}</h5>
+    <h5>Directory</h5>
+    <h3>${val}</h3>
     </div>
     `;
     return html;
 }
 
+var videoslist = [];
+
 function mp4clicked(element) {
     console.log(`clicked mp4 ${element}`);
+    var id = element.substring(element.lastIndexOf("id")+2);
+    var nextpath = videoslist.find(x=> x.id == id).data;
+
+    console.log(`nextpath : ${nextpath}`);
+
 }
 
 function genmp4(ididx, path) {
     var val = path.substring(path.lastIndexOf('/')+1);
+    var keyvalue = {
+        id: ididx,
+        data: path
+    };
+    videoslist.push(keyvalue);
     var html=`
-    <div id=id${ididx} class="videoitem" onclick="mp4clicked(this.id)">
-    <h3>VIDEO</h3>
-    <video></video>
+    <div id=id${ididx} class="videoview" onclick="mp4clicked(this.id)">
+    <video class="videoitem" preload="metadata" src="${path}#t=0.1"></video>
     </div>
     `;
     return html;
@@ -120,37 +162,8 @@ var dirlistcount=0;
 var dirlistloaduntil=0;
 var dirlistloadfrom=0;
 
-
-function reloadimages()
-{
-    if(dirlistloaduntil < dirlistcount)
-    {
-        dirlistloaduntil += 20;
-        if(dirlistloaduntil > dirlistcount) dirlistloaduntil = dirlistcount;
-        
-        console.info(`loading to ${dirlistloadfrom} ~ ${dirlistloaduntil}`);
-        var imgs = "";
-        for(var i=dirlistloadfrom;i<dirlistloaduntil;i++)
-        {
-            const curr = `${path}${dirlist[i]}`;
-            imgs += genimage(curr);
-        }
-        imagepanel.innerHTML+=imgs;
-        dirlistloadfrom = dirlistloaduntil;
-    }
-    else
-    {
-        console.info(`ended`);
-    }
-}
-
-
-
-
 if(path != null)
 {
-    console.log(`path : ${path}`);
-    // const path="drv1/wow/LilyBella/";
     const jsonraw=dirseek(path);
     const jsondata=JSON.parse(jsonraw); 
     
@@ -201,7 +214,9 @@ if(path != null)
     
         });
         imagepanel.innerHTML=contents;
-    
+
+        console.info(`folderslist - ${folderslist.length}`);
+        console.info(`videoslist - ${videoslist.length}`);
         // reloadimages();
     }
     else

@@ -27,11 +27,14 @@ if(isset($_GET["x"]))
         while(($entry=readdir($dirhandle)) !== FALSE)
         {
             if($entry == "." || $entry == "..") continue;
+
+            // console_log($entry);
             array_push($data, $entry);
         }
         
         $jsonresult["ret"]=TRUE;
     }
+
     closedir($path);
 }
 else
@@ -43,5 +46,4 @@ else
 
 $jsonresult["data"] = $data;
 echo json_encode($jsonresult);
-
 ?>

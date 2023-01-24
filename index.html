@@ -29,6 +29,7 @@
         height: 100%;
         display: none;
         text-align: center;
+        background-color: black;
     }
 
     .imageview {
@@ -39,18 +40,22 @@
     }
 
     .imageitem {
-        max-width: 98%;
-        max-height: 98%;
-        /* width: 98%;
-        height: 98%; */
-        object-fit: cover;
+        /* max-width: 98%;
+        max-height: 98%; */
+        width: 99%;
+        height: 99%;
+        object-fit: contain;
         object-position: center;
-        padding: 5px;
+    }
+
+    .imageitem:hover {
+        background: silver;
     }
     
     .textitem {
-        width: 90%;
-        padding: 5px;
+        width: 99%;
+        height: 99%;
+        margin: 5px;
         text-align: center;
     }
 
@@ -58,15 +63,20 @@
         background: silver;
     }
 
-    .videoitem {
-        width: 90%;
-        height: 100%;
+    .videoview {
+        width: 99%;
+        margin: 5px;
         padding: 5px;
         text-align: center;
     }
     
-    .videoitem:hover {
+    .videoview:hover {
         background: silver;
+    }
+
+    .videoitem {
+        width: 99%;
+        height: auto;
     }
 
 </style>
@@ -75,13 +85,10 @@
 <body>
 
     <div class="imagepanel" id="imagepanel"></div>
-    <div class="imageviewlayout" id="imageviewlayout" >
+    <div class="imageviewlayout" id="imageviewlayout">
         <img class="imageview" id="imageview"></img>
     </div>
     
-    
-
-
     <script src="script.js"></script>
 </body>
 </html> 
