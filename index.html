@@ -14,7 +14,7 @@
         margin: 0px;
     }
 
-    .imagepanel {
+    .FilesPanel {
         position: absolute;left: 0px;top: 0px;
         width: 98%;
         display: grid;
@@ -79,16 +79,24 @@
         height: auto;
     }
 
+    .textinfo {
+        width: 100%;
+        position: absolute;left: 0px;top: 80%;
+        /* background-color: rgba(0, 0, 0, 0.205); */
+        text-align: center;
+    }
+
 </style>
-</head>
+</head> 
 
 <body>
+    <div class="FilesPanel" id="FilesPanel"></div>
 
-    <div class="imagepanel" id="imagepanel"></div>
-    <div class="imageviewlayout" id="imageviewlayout">
-        <img class="imageview" id="imageview"></img>
+    <h4 class="textinfo" id="textinfo"></h4>
+
+    <div>
+        <script src="script.js"></script>
     </div>
-    
-    <script src="script.js"></script>
+
 </body>
 </html> 

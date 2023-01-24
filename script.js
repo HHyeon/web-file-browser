@@ -3,10 +3,22 @@ const urlStr = window.location.href;
 const url = new URL(urlStr);
 const urlParams = url.searchParams;
 const path = urlParams.get('p');
-const rootdrv="drv0";
+const rootdrv="drv1";
+
+document.addEventListener('readystatechange', event => { 
+    // When HTML/DOM elements are ready:
+    if (event.target.readyState === "interactive") {   //does same as:  ..addEventListener("DOMContentLoaded"..
+        console.log("interactive");
+    }
+
+    // When window loaded ( external resources are loaded too- `css`,`src`, etc...) 
+    if (event.target.readyState === "complete") {
+        console.log("complete");
+    }
+});
+
 
 var ctrldown = 0;
-
 document.addEventListener("keydown", function(e) {
     if(e.key == "Control") {
         ctrldown = 1;
@@ -26,14 +38,14 @@ if(path == null)
 }
 
 window.addEventListener("scroll", function(element) {
-    if(window.innerHeight + window.scrollY >= imagepanel.scrollHeight)
+    if(window.innerHeight + window.scrollY >= FilesPanel.scrollHeight)
     {
         console.log("reached end")
     }
 });
 
 window.addEventListener("keyup", function(element) {
-    if(element.key == 'w')
+    if(element.key == 'q')
     {
         if(path != rootdrv)
         {
@@ -49,7 +61,7 @@ window.addEventListener("keyup", function(element) {
     }
     else if(element.key == 'r')
     {
-
+        console.log(`video seeking`);
     }
 });
 
@@ -61,25 +73,12 @@ function dirseek(path) {
     return xmlhttp.responseText;
 };
 
-var imageviewlayout = document.getElementById("imageviewlayout");
-var imageview = document.getElementById("imageview");
-
-imageviewlayout.addEventListener("click", function() {
-    imageviewlayout.style.display = "none";
-    imageview.style.display = "none";
-}) ;
-
 function imgclicked(element) {
     console.log("imgclicked");
 
     var newpage = `./imgview.html`;
 
     window.open(newpage, "_blank");
-
-    // var img=document.getElementById(element);
-    // imageview.src=img.src;
-    // imageview.style.display = "block";
-    // imageviewlayout.style.display = "block";
 }
 
 function genimage(ididx, srcpath) {
@@ -136,8 +135,13 @@ function mp4clicked(element) {
     var nextpath = videoslist.find(x=> x.id == id).data;
 
     console.log(`nextpath : ${nextpath}`);
-
+    
+    var newpage = `./videoview.html?p=${nextpath}`;
+    console.log(newpage);
+    window.open(newpage, "_blank");
 }
+
+var textinfo = document.getElementById("textinfo");
 
 function genmp4(ididx, path) {
     var val = path.substring(path.lastIndexOf('/')+1);
@@ -148,13 +152,14 @@ function genmp4(ididx, path) {
     videoslist.push(keyvalue);
     var html=`
     <div id=id${ididx} class="videoview" onclick="mp4clicked(this.id)">
-    <video class="videoitem" preload="metadata" src="${path}#t=0.1"></video>
+    <video alt="${val}" class="videoitem" preload="metadata" src="${path}#t=10.0"
+    ></video>
     </div>
     `;
     return html;
 }
 
-var imagepanel = document.getElementById("imagepanel");
+var FilesPanel = document.getElementById("FilesPanel");
 var title = document.getElementById("title");
 
 var dirlist = null;
@@ -174,7 +179,8 @@ if(path != null)
         dirlist = jsondata["data"];
         dirlist.sort();
         dirlistcount = dirlist.length;
-        title.innerText = `${dirlistcount} items`;
+        const dirname = path.substring(path.lastIndexOf('/')+1);
+        title.innerText = `${dirname}/${dirlistcount} items`;
     
         var contents = "";
         var ididx=0;
@@ -213,7 +219,7 @@ if(path != null)
             ididx++;
     
         });
-        imagepanel.innerHTML=contents;
+        FilesPanel.innerHTML=contents;
 
         console.info(`folderslist - ${folderslist.length}`);
         console.info(`videoslist - ${videoslist.length}`);
@@ -223,12 +229,12 @@ if(path != null)
     {
         dirlist = null;
         dirlistcount = 0;
-        imagepanel.innerHTML = `<h1>failed</h1>`
+        FilesPanel.innerHTML = `<h1>failed</h1>`
     }
 }
 else
 {
     dirlist = null;
     dirlistcount = 0;
-    imagepanel.innerHTML = `<h1>failed</h1>`
+    FilesPanel.innerHTML = `<h1>failed</h1>`
 }

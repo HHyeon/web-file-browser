@@ -1,0 +1,47 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>videoviewer</title>
+
+        <style>
+            html {
+                margin: 0px;
+            }
+            body {
+                background-color: rgb(25, 25, 25);
+                color: aliceblue;
+                margin: 0px;
+            }
+
+            video {
+                width: 100%;
+                height: auto;
+            }
+        </style>
+    </head>
+    <body>
+        
+        <video id="player" autoplay buffered controls></video>
+
+        <script>    
+            const urlStr = window.location.href;
+            const url = new URL(urlStr);
+            const urlParams = url.searchParams;
+            const path = urlParams.get('p');
+
+                        
+            if(path != null)
+            {
+                var player = document.getElementById("player");
+                player.src = path;
+            }
+            else
+            {
+                console.log(`${path} is null`);
+            }
+
+
+        </script>
+
+    </body>
+</html>
