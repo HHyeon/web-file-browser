@@ -3,7 +3,7 @@ const urlStr = window.location.href;
 const url = new URL(urlStr);
 const urlParams = url.searchParams;
 const path = urlParams.get('p');
-const rootdrv="drv1";
+const drivelist = ["drv0", "drv1"];
 
 document.addEventListener('readystatechange', event => { 
     // When HTML/DOM elements are ready:
@@ -32,9 +32,10 @@ document.addEventListener("keyup", function(e) {
 
 if(path == null)
 {
-    const nextlink = `?p=${rootdrv}`;
-    console.log(nextlink);
-    location.replace(nextlink);
+    // Proceed To Drive Selection Page
+    // const nextlink = `?p=${currentrootpath}`;
+    // console.log(nextlink);
+    // location.replace(nextlink);
 }
 
 window.addEventListener("scroll", function(element) {
@@ -47,21 +48,19 @@ window.addEventListener("scroll", function(element) {
 window.addEventListener("keyup", function(element) {
     if(element.key == 'q')
     {
-        if(path != rootdrv)
+        if(path == null) return;
+
+        if(drivelist.includes(path))
+        {
+            window.location = window.location.href.split("?")[0];
+        }
+        else
         {
             var nextpath = path.substring(0, path.lastIndexOf('/'));
-    
-            console.log(nextpath);
-            location.replace(nextpath);
-            
             const nextlink = `?p=${nextpath}`;
             console.log(nextlink);
             location.replace(nextlink);
         }
-    }
-    else if(element.key == 'r')
-    {
-        console.log(`video seeking`);
     }
 });
 
@@ -212,8 +211,6 @@ if(path != null)
                 {
                     contents += genfolder(ididx, curr);
                 }
-                
-    
             }
             
             ididx++;
@@ -227,14 +224,18 @@ if(path != null)
     }
     else
     {
-        dirlist = null;
-        dirlistcount = 0;
         FilesPanel.innerHTML = `<h1>failed</h1>`
     }
 }
 else
 {
-    dirlist = null;
-    dirlistcount = 0;
-    FilesPanel.innerHTML = `<h1>failed</h1>`
+    var contents = "";
+    var ididx=0;
+
+    drivelist.forEach(element => {
+        contents += genfolder(ididx, element);
+        ididx++;
+    });
+    
+    FilesPanel.innerHTML=contents;
 }
