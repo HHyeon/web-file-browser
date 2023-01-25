@@ -17,7 +17,6 @@ document.addEventListener('readystatechange', event => {
     }
 });
 
-
 var ctrldown = 0;
 document.addEventListener("keydown", function(e) {
     if(e.key == "Control") {
@@ -30,14 +29,6 @@ document.addEventListener("keyup", function(e) {
     }
 });
 
-if(path == null)
-{
-    // Proceed To Drive Selection Page
-    // const nextlink = `?p=${currentrootpath}`;
-    // console.log(nextlink);
-    // location.replace(nextlink);
-}
-
 window.addEventListener("scroll", function(element) {
     if(window.innerHeight + window.scrollY >= FilesPanel.scrollHeight)
     {
@@ -45,23 +36,33 @@ window.addEventListener("scroll", function(element) {
     }
 });
 
+function nav_back() {
+    if(path == null) return;
+
+    if(drivelist.includes(path))
+    {
+        window.location = window.location.href.split("?")[0];
+    }
+    else
+    {
+        var nextpath = path.substring(0, path.lastIndexOf('/'));
+        const nextlink = `?p=${nextpath}`;
+        console.log(nextlink);
+        location.replace(nextlink);
+    }
+}
+
 window.addEventListener("keyup", function(element) {
     if(element.key == 'q')
     {
-        if(path == null) return;
-
-        if(drivelist.includes(path))
-        {
-            window.location = window.location.href.split("?")[0];
-        }
-        else
-        {
-            var nextpath = path.substring(0, path.lastIndexOf('/'));
-            const nextlink = `?p=${nextpath}`;
-            console.log(nextlink);
-            location.replace(nextlink);
-        }
+        nav_back();
     }
+});
+
+
+var btn01 = document.getElementById("btn01");
+btn01.addEventListener("click", function() {
+    nav_back();
 });
 
 function dirseek(path) {
@@ -81,7 +82,7 @@ function imgclicked(element) {
 }
 
 function genimage(ididx, srcpath) {
-    var html=`<img id=id${ididx} class="imageitem" src="${srcpath}" onclick="imgclicked(this.id)"></img>`;
+    var html=`<img id=id${ididx} class="imageitem" src="${srcpath}" loading=lazy onclick="imgclicked(this.id)"></img>`;
     return html;
 }
 
@@ -118,9 +119,11 @@ function genfolder(ididx, path) {
     folderslist.push(keyvalue);
     
     var html=`
-    <div id=id${ididx} class="textitem" onclick="folderclicked(this.id)">
-    <h5>Directory</h5>
-    <h3>${val}</h3>
+    <div id=id${ididx} class="diritem" onclick="folderclicked(this.id)">
+    <div class="vertical-center">
+        <h5 class="itemlabel">Directory</h5>
+        <h3 class="itemlabel">${val}</h3>
+    </div>
     </div>
     `;
     return html;
@@ -140,10 +143,8 @@ function mp4clicked(element) {
     window.open(newpage, "_blank");
 }
 
-var textinfo = document.getElementById("textinfo");
-
 function genmp4(ididx, path) {
-    var val = path.substring(path.lastIndexOf('/')+1);
+    var name = path.substring(path.lastIndexOf('/')+1);
     var keyvalue = {
         id: ididx,
         data: path
@@ -151,8 +152,8 @@ function genmp4(ididx, path) {
     videoslist.push(keyvalue);
     var html=`
     <div id=id${ididx} class="videoview" onclick="mp4clicked(this.id)">
-    <video alt="${val}" class="videoitem" preload="metadata" src="${path}#t=10.0"
-    ></video>
+    <video class="videoitem" preload="metadata" src="${path}#t=10.0"></video>
+    <h6 class="itemlabel">${name}</h6>
     </div>
     `;
     return html;
