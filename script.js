@@ -50,7 +50,7 @@ function nav_back() {
         console.log(nextlink);
         location.replace(nextlink);
     }
-}
+};
 
 window.addEventListener("keyup", function(element) {
     if(element.key == 'q')
@@ -59,10 +59,18 @@ window.addEventListener("keyup", function(element) {
     }
 });
 
-
-var btn01 = document.getElementById("btn01");
-btn01.addEventListener("click", function() {
+document.getElementById("btnback").addEventListener("click", function() {
     nav_back();
+});
+
+var btnprev = document.getElementById("btnprev");
+btnprev.addEventListener("click", function() {
+    showcurrentpage(0); // 1 to next , 0 to prev
+});
+
+var btnnext = document.getElementById("btnnext");
+btnnext.addEventListener("click", function() {
+    showcurrentpage(1); // 1 to next , 0 to prev
 });
 
 function dirseek(path) {
@@ -159,13 +167,79 @@ function genmp4(ididx, path) {
     return html;
 }
 
+
 var FilesPanel = document.getElementById("FilesPanel");
 var title = document.getElementById("title");
 
 var dirlist = null;
+var dirlistshowposition=0;
+const dirlistmaxshow=16;
 var dirlistcount=0;
-var dirlistloaduntil=0;
-var dirlistloadfrom=0;
+
+function showcurrentpage(isnext) {
+
+    if(isnext)
+    {
+        if(dirlistshowposition+dirlistmaxshow <= dirlistcount)
+        {
+            dirlistshowposition += dirlistmaxshow;
+        }
+    }
+    else
+    {
+        if(dirlistshowposition >= dirlistmaxshow)
+        {
+            dirlistshowposition -= dirlistmaxshow;
+        }
+    }
+
+    btnprev.innerText = `Prev - ${Math.floor(dirlistshowposition/dirlistmaxshow)}`;
+    btnnext.innerText = `Next - ${Math.floor(dirlistcount/dirlistmaxshow) - Math.floor(dirlistshowposition/dirlistmaxshow)}`;
+
+
+
+    var contents = "";
+    var until = dirlistshowposition + dirlistmaxshow;
+    if(until > dirlistcount) until = dirlistcount;
+
+    console.log(`show ${dirlistshowposition} ~ ${until}`);
+    for(var ididx=dirlistshowposition;ididx<until;ididx++)
+    {
+        element = dirlist[ididx];
+
+        var curr = `${path}`;
+        if(path[path.length-1] != '/') curr += '/';
+        curr += `${element}`;
+
+        const dot = curr.lastIndexOf('.');
+
+        if(dot < 0) // this is a folder
+        {
+            // console.log(curr);
+            contents += genfolder(ididx, curr);
+        }
+        else
+        {
+            var fileext=curr.substring(dot+1);
+            // console.log(`fileext - ${fileext}`);
+
+            if(fileext == "mp4")
+            {
+                contents += genmp4(ididx, curr);
+            }
+            else if(fileext == "jpg" || fileext == "jpeg") {
+                contents += genimage(ididx, curr);
+            }
+            else
+            {
+                contents += genfolder(ididx, curr);
+            }
+        }
+    }
+
+    FilesPanel.innerHTML=contents;
+}
+
 
 if(path != null)
 {
@@ -181,43 +255,14 @@ if(path != null)
         dirlistcount = dirlist.length;
         const dirname = path.substring(path.lastIndexOf('/')+1);
         title.innerText = `${dirname}/${dirlistcount} items`;
-    
-        var contents = "";
-        var ididx=0;
-        dirlist.forEach(element => {
-            var curr = `${path}`;
-            if(path[path.length-1] != '/') curr += '/';
-            curr += `${element}`;
 
-            const dot = curr.lastIndexOf('.');
+        // if(dirlistcount > dirlistmaxshow)
+        // {
+        //     var idx= Math.floor(dirlistcount / dirlistmaxshow);
+        //     btnnext.innerText = `Next - ${idx}`;
+        // }
     
-            if(dot < 0) // this is a folder
-            {
-                // console.log(curr);
-                contents += genfolder(ididx, curr);
-            }
-            else
-            {
-                var fileext=curr.substring(dot+1);
-                // console.log(`fileext - ${fileext}`);
-    
-                if(fileext == "mp4")
-                {
-                    contents += genmp4(ididx, curr);
-                }
-                else if(fileext == "jpg" || fileext == "jpeg") {
-                    contents += genimage(ididx, curr);
-                }
-                else
-                {
-                    contents += genfolder(ididx, curr);
-                }
-            }
-            
-            ididx++;
-    
-        });
-        FilesPanel.innerHTML=contents;
+        showcurrentpage(0); // 1 to next , 0 to prev
 
         console.info(`folderslist - ${folderslist.length}`);
         console.info(`videoslist - ${videoslist.length}`);
