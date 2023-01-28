@@ -17,29 +17,68 @@
                 width: 100%;
                 height: auto;
             }
+
         </style>
     </head>
     <body>
         
-        <video id="player" autoplay buffered controls></video>
+        <video id="player" buffered ></video>
+        
+        <script>
 
-        <script>    
+            const normalmove = 0.5;
+
             const urlStr = window.location.href;
             const url = new URL(urlStr);
             const urlParams = url.searchParams;
             const path = urlParams.get('p');
+            let player;
 
-                        
+            function onKeydown(param)
+            {
+                console.log(param.key);
+                console.log(param.ctrlKey);
+                console.log(param.shiftKey);
+
+                switch(param.key){
+                    case ' ':
+                        if(player.paused)
+                            player.play();
+                        else 
+                            player.pause();
+                        break;
+                    case "ArrowRight":
+                        {
+                            let move = player.currentTime + normalmove;
+                            if(move >= player.duration) move = player.duration - normalmove;
+                            player.currentTime = move;
+                        }
+                        break;
+                    case "ArrowLeft":
+                        {
+                            let move = player.currentTime - normalmove;
+                            if(move < 0) move = 0;
+                            player.currentTime = move;   
+                        }
+                        break;
+                }
+            }
+
             if(path != null)
             {
-                var player = document.getElementById("player");
+                console.log(`path - ${path}`);
+                player = document.getElementById("player");
                 player.src = path;
+                // player.playbackRate = 2.0;
+                
+                player.play();
+                player.volume = 0.3;
+                window.addEventListener("keydown", onKeydown);
             }
             else
             {
                 console.log(`${path} is null`);
             }
-
 
         </script>
 
