@@ -173,14 +173,15 @@ var title = document.getElementById("title");
 
 var dirlist = null;
 var dirlistshowposition=0;
+var dirlistshowposition_past=-1;
 const dirlistmaxshow=16;
-var dirlistcount=0;
+var itemcount=0;
 
 function showcurrentpage(isnext) {
-
+    
     if(isnext)
     {
-        if(dirlistshowposition+dirlistmaxshow <= dirlistcount)
+        if(dirlistshowposition+dirlistmaxshow <= itemcount)
         {
             dirlistshowposition += dirlistmaxshow;
         }
@@ -193,14 +194,18 @@ function showcurrentpage(isnext) {
         }
     }
 
+    if(dirlistshowposition == dirlistshowposition_past)
+    {
+        return;
+    }
+    dirlistshowposition_past = dirlistshowposition;
+
     btnprev.innerText = `Prev - ${Math.floor(dirlistshowposition/dirlistmaxshow)}`;
-    btnnext.innerText = `Next - ${Math.floor(dirlistcount/dirlistmaxshow) - Math.floor(dirlistshowposition/dirlistmaxshow)}`;
-
-
+    btnnext.innerText = `Next - ${Math.floor(itemcount/dirlistmaxshow) - Math.floor(dirlistshowposition/dirlistmaxshow)}`;
 
     var contents = "";
     var until = dirlistshowposition + dirlistmaxshow;
-    if(until > dirlistcount) until = dirlistcount;
+    if(until > itemcount) until = itemcount;
 
     console.log(`show ${dirlistshowposition} ~ ${until}`);
     for(var ididx=dirlistshowposition;ididx<until;ididx++)
@@ -252,13 +257,13 @@ if(path != null)
     
         dirlist = jsondata["data"];
         dirlist.sort();
-        dirlistcount = dirlist.length;
+        itemcount = dirlist.length;
         const dirname = path.substring(path.lastIndexOf('/')+1);
-        title.innerText = `${dirname}/${dirlistcount} items`;
+        title.innerText = `${dirname}/${itemcount} items`;
 
-        // if(dirlistcount > dirlistmaxshow)
+        // if(itemcount > dirlistmaxshow)
         // {
-        //     var idx= Math.floor(dirlistcount / dirlistmaxshow);
+        //     var idx= Math.floor(itemcount / dirlistmaxshow);
         //     btnnext.innerText = `Next - ${idx}`;
         // }
     
@@ -282,6 +287,8 @@ else
         contents += genfolder(ididx, element);
         ididx++;
     });
+
+    itemcount = drivelist.length;
     
     FilesPanel.innerHTML=contents;
 }
