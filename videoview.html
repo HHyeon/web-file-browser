@@ -4,29 +4,60 @@
         <title>videoviewer</title>
 
         <style>
-            html {
-                margin: 0px;
-            }
-            body {
-                background-color: rgb(25, 25, 25);
-                color: aliceblue;
+            *{
                 margin: 0px;
             }
 
-            video {
+            body {
+                background-color: rgb(25, 25, 25);
+                color: aliceblue;
+            }
+
+            .container {
+                position: relative;
+            }
+
+            .container video {
+                position: relative;
                 width: 100%;
                 height: auto;
+	            vertical-align: middle;
+                z-index: 0;
+            }
+
+            .overlay {
+                position:absolute;
+                left: 2%;
+                top: 2%;
+                z-index: 1;
             }
 
         </style>
     </head>
     <body>
-        
-        <video id="player" buffered ></video>
+
+        <div class="container">
+            <video id="player" buffered> </video>
+
+            <div class="overlay">
+                <h1 id="label1"></h1>
+            </div>
+        </div>
         
         <script>
 
-            const normalmove = 0.5;
+            const label1 = document.getElementById("label1");
+            function setLabelText(msg) {
+                label1.innerText = msg;
+                label1.style.visibility="visible";
+                setTimeout(() => {
+                    label1.style.visibility="hidden";
+                },500);
+            }
+
+            const smallmove = 1.0;
+            const normalmove = 5.0;
+            const bigmove = 30.0;
 
             const urlStr = window.location.href;
             const url = new URL(urlStr);
@@ -42,23 +73,53 @@
 
                 switch(param.key){
                     case ' ':
-                        if(player.paused)
+                        if(player.paused) {
                             player.play();
-                        else 
+                            setLabelText("play");
+                        }
+                        else {
                             player.pause();
+                            setLabelText("pause");
+                        }
                         break;
                     case "ArrowRight":
                         {
-                            let move = player.currentTime + normalmove;
-                            if(move >= player.duration) move = player.duration - normalmove;
+                            let move;
+                            let moveunit;
+
+                            if(param.shiftKey)
+                                moveunit = smallmove;
+                            else if(param.ctrlKey)
+                                moveunit = bigmove;
+                            else
+                                moveunit = normalmove;
+
+                            move = player.currentTime + moveunit;
+
+                            if(move >= player.duration) move = player.duration - 1.0;
                             player.currentTime = move;
+
+                            setLabelText(`+ ${moveunit} s`);
                         }
                         break;
                     case "ArrowLeft":
                         {
-                            let move = player.currentTime - normalmove;
+                            let move;
+                            let moveunit;
+
+                            if(param.shiftKey)
+                                moveunit = smallmove;
+                            else if(param.ctrlKey)
+                                moveunit = bigmove;
+                            else
+                                moveunit = normalmove;
+
+                            move = player.currentTime - moveunit;
+
                             if(move < 0) move = 0;
                             player.currentTime = move;   
+
+                            setLabelText(`- ${moveunit} s`);
                         }
                         break;
                 }
