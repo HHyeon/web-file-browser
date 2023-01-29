@@ -31,6 +31,10 @@
                 top: 2%;
                 z-index: 1;
             }
+            
+            .overlay #label1 {
+                background-color: rgba(0, 0, 0, 0.171);
+            }
 
         </style>
     </head>
@@ -83,6 +87,28 @@
                 }
             }
 
+            function volumncontrol(updown)
+            {
+                const unit = 0.05;
+                let volumnset = player.volume;
+                if(updown) {
+                    if(volumnset + unit > 1.0)
+                        volumnset = 1.0;
+                    else
+                        volumnset += unit;
+                }
+                else {
+                    if(volumnset - unit < 0)
+                        volumnset = 0;
+                    else
+                        volumnset -= unit;
+                }
+
+                player.volume = volumnset;
+                
+                setLabelText(`volumn: ${Math.round(player.volume*100)}%`);
+            }
+
             function onKeydown(param)
             {
                 // console.log(param.key);
@@ -102,21 +128,10 @@
                         }
                         break;
                     case "ArrowUp":
-                        if(player.volume + 0.1 > 1.0)
-                            player.volume = 1.0;
-                        else
-                            player.volume += 0.1;
-                            
-                        setLabelText(`volumn: ${Math.round(player.volume*100)}%`);
+                        volumncontrol(true);
                         break;
-
                     case "ArrowDown":
-                        if(player.volume - 0.1 < 0)
-                            player.volume = 0;
-                        else
-                            player.volume -= 0.1;
-
-                        setLabelText(`volumn: ${Math.round(player.volume*100)}%`);
+                        volumncontrol(false);
                         break;
                     case "ArrowRight":
                         {
@@ -193,9 +208,10 @@
                     clearTimeout(intervalvideoposapplyier);
                     intervalvideoposapplyier = undefined;
                     
-                    const progress = (player.currentTime / player.duration * 100).toFixed(2);
-                    setLabelText(`set - ${progress}%`);
                     player.currentTime = startvideoposition + positionscrollcurr;
+                    const progress = (player.currentTime / player.duration * 100).toFixed(2);
+                    setLabelText(`moving - ${progress}% (${Math.round((player.currentTime - startvideoposition))}s)`);
+
                     player.play();
                 }
             });
@@ -207,9 +223,10 @@
                     let diff = param.x - mousedownpos;
                     const scrolllimit = 500;
                     if(diff > scrolllimit) diff = scrolllimit;
-                    diff /= 20;
+                    
+                    diff /= 1;
                     diff = Math.round(diff);
-                    diff *= 20;
+                    diff *= 1;
 
                     const maxpushduration = 180.0 // second
                     const positionscroll = diff / scrolllimit * maxpushduration;
@@ -226,7 +243,7 @@
                             {
                                 player.currentTime = (startvideoposition+positionscrollcurr);
                                 const progress = (player.currentTime / player.duration * 100).toFixed(2);
-                                setLabelText(`moving - ${progress}%`);
+                                setLabelText(`moving - ${progress}% (${Math.round((player.currentTime - startvideoposition))}s)`);
                             }
                         }, 500);
                     }
@@ -242,10 +259,9 @@
                 console.log(`path - ${path}`);
                 player = document.getElementById("player");
                 player.src = path;
-                // player.playbackRate = 2.0;
-                
+
                 player.play();
-                player.volume = 0.2;
+                player.volume = 0.1;
                 window.addEventListener("keydown", onKeydown);
             }
             else
