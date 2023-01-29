@@ -47,12 +47,19 @@
         <script>
 
             const label1 = document.getElementById("label1");
+            let delayedoffTimer = undefined;
+            
             function setLabelText(msg) {
+                if(delayedoffTimer != undefined) clearTimeout(delayedoffTimer);
+                
                 label1.innerText = msg;
                 label1.style.visibility="visible";
-                setTimeout(() => {
+                
+                delayedoffTimer = setTimeout(() => {
                     label1.style.visibility="hidden";
-                },500);
+                    delayedoffTimer = undefined;
+                },1000);
+
             }
 
             const smallmove = 1.0;
@@ -63,30 +70,59 @@
             const url = new URL(urlStr);
             const urlParams = url.searchParams;
             const path = urlParams.get('p');
-            let player;
+
+
+            function pauseplay() {
+                if(player.paused) {
+                    player.play();
+                    setLabelText("play");
+                }
+                else {
+                    player.pause();
+                    setLabelText("pause");
+                }
+            }
 
             function onKeydown(param)
             {
-                console.log(param.key);
-                console.log(param.ctrlKey);
-                console.log(param.shiftKey);
+                // console.log(param.key);
 
                 switch(param.key){
                     case ' ':
-                        if(player.paused) {
-                            player.play();
-                            setLabelText("play");
+                        pauseplay();
+                        break;
+                    case 'f':
+                        {
+                            if (!document.fullscreenElement) {
+                                document.documentElement.requestFullscreen()
+                            } else {
+                                if (document.exitFullscreen)
+                                    document.exitFullscreen()
+                            }
                         }
-                        else {
-                            player.pause();
-                            setLabelText("pause");
-                        }
+                        break;
+                    case "ArrowUp":
+                        if(player.volume + 0.1 > 1.0)
+                            player.volume = 1.0;
+                        else
+                            player.volume += 0.1;
+                            
+                        setLabelText(`volumn: ${Math.round(player.volume*100)}%`);
+                        break;
+
+                    case "ArrowDown":
+                        if(player.volume - 0.1 < 0)
+                            player.volume = 0;
+                        else
+                            player.volume -= 0.1;
+
+                        setLabelText(`volumn: ${Math.round(player.volume*100)}%`);
                         break;
                     case "ArrowRight":
                         {
                             let move;
                             let moveunit;
-
+                            
                             if(param.shiftKey)
                                 moveunit = smallmove;
                             else if(param.ctrlKey)
@@ -95,18 +131,19 @@
                                 moveunit = normalmove;
 
                             move = player.currentTime + moveunit;
-
                             if(move >= player.duration) move = player.duration - 1.0;
                             player.currentTime = move;
 
-                            setLabelText(`+ ${moveunit} s`);
+                            const progress = (player.currentTime / player.duration * 100).toFixed(2);
+
+                            setLabelText(`+ ${moveunit}s (${progress}%)`);
                         }
                         break;
                     case "ArrowLeft":
                         {
                             let move;
                             let moveunit;
-
+                            
                             if(param.shiftKey)
                                 moveunit = smallmove;
                             else if(param.ctrlKey)
@@ -115,15 +152,90 @@
                                 moveunit = normalmove;
 
                             move = player.currentTime - moveunit;
-
                             if(move < 0) move = 0;
                             player.currentTime = move;   
 
-                            setLabelText(`- ${moveunit} s`);
+                            const progress = (player.currentTime / player.duration * 100).toFixed(2);
+
+                            setLabelText(`- ${moveunit}s (${progress}%)`);
                         }
                         break;
                 }
             }
+
+            let mousedowned_lowedge = false;
+            let mousedowned = false;
+            let mousedownpos = 0;
+            let cancelnextclick = false;
+            let intervalvideoposapplyier = undefined;
+            let positionscrollstart;
+            let positionscrollcurr;
+            let startvideoposition;
+            
+            document.addEventListener("click", (param) => {
+                if(cancelnextclick) {
+                    cancelnextclick = false;
+                    return;
+                }
+                pauseplay();
+            });
+
+            document.addEventListener("mousedown", (param) => {
+                mousedowned = true;
+                mousedowned_lowedge = true;
+                mousedownpos = param.x;
+            });
+            
+            document.addEventListener("mouseup", (param) => {
+                mousedowned = false;
+                if(intervalvideoposapplyier != undefined)
+                {
+                    clearTimeout(intervalvideoposapplyier);
+                    intervalvideoposapplyier = undefined;
+                    
+                    const progress = (player.currentTime / player.duration * 100).toFixed(2);
+                    setLabelText(`set - ${progress}%`);
+                    player.currentTime = startvideoposition + positionscrollcurr;
+                    player.play();
+                }
+            });
+            
+            document.addEventListener("mousemove", (param) => {
+                if(mousedowned) {
+                    cancelnextclick = true;
+
+                    let diff = param.x - mousedownpos;
+                    const scrolllimit = 500;
+                    if(diff > scrolllimit) diff = scrolllimit;
+                    diff /= 20;
+                    diff = Math.round(diff);
+                    diff *= 20;
+
+                    const maxpushduration = 180.0 // second
+                    const positionscroll = diff / scrolllimit * maxpushduration;
+
+                    if(mousedowned_lowedge)
+                    {
+                        mousedowned_lowedge = false;
+                        player.pause();
+                        positionscrollstart = positionscroll;
+                        startvideoposition = player.currentTime;
+
+                        intervalvideoposapplyier = setInterval(() => {
+                            if((startvideoposition+positionscrollcurr) != player.currentTime)
+                            {
+                                player.currentTime = (startvideoposition+positionscrollcurr);
+                                const progress = (player.currentTime / player.duration * 100).toFixed(2);
+                                setLabelText(`moving - ${progress}%`);
+                            }
+                        }, 500);
+                    }
+
+                    positionscrollcurr = positionscroll - positionscrollstart;
+                    
+                    
+                }
+            });
 
             if(path != null)
             {
@@ -133,7 +245,7 @@
                 // player.playbackRate = 2.0;
                 
                 player.play();
-                player.volume = 0.3;
+                player.volume = 0.2;
                 window.addEventListener("keydown", onKeydown);
             }
             else
