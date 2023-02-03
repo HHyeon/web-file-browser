@@ -111,7 +111,7 @@
 
             function onKeydown(param)
             {
-                // console.log(param.key);
+                console.log(param.key);
 
                 switch(param.key){
                     case ' ':
@@ -178,11 +178,17 @@
                 }
             }
 
-            let intervalvideoposapplyier = undefined;
-            let leftmousedowned_lowedge = false;
+            let leftmouse_movestarted = false;
             let leftmousedowned = false;
             let leftmousedownpos = 0;
             let leftcancelnextclick = false;
+
+            let rightmouse_movestarted = false;
+            let rightmousedowned = false;
+            let rightmousedownpos = 0;
+            let rightcancelnextclick = false;
+
+            let intervalvideoposapplyier = undefined;
             let positionscrollstart;
             let positionscrollcurr;
             let startvideoposition;
@@ -198,7 +204,10 @@
 
                         break;
                     case 2:
-
+                        if(rightcancelnextclick) rightcancelnextclick = false;
+                        else {
+                            console.log("right click");
+                        }
                         break;
                 }
             });
@@ -208,7 +217,7 @@
                 switch(param.button) {
                     case 0: // left
                         leftmousedowned = true;
-                        leftmousedowned_lowedge = true;
+                        leftmouse_movestarted = true;
                         leftmousedownpos = param.x;
                         break;
                     
@@ -217,7 +226,9 @@
                         break;
                     
                     case 2: // right
-
+                        rightmousedowned = true;
+                        rightmouse_movestarted = true;
+                        rightmousedownpos = param.x
                         break;
                 }
                 
@@ -248,59 +259,75 @@
                         break;
                     
                     case 2: // right
-
+                        {
+                            rightmousedowned = false;
+                        }
                         break;
                 }
 
             });
             
+
+            let positionscrollcurr_past = -1;
+            let positionscroll_past = -1;
+
             document.addEventListener("mousemove", (param) => {
-                switch(param.button) {
-                    case 0: // left
-                        {
-                            if(leftmousedowned) {
-                                leftcancelnextclick = true;
 
-                                let diff = param.x - leftmousedownpos;
-                                const scrolllimit = 500;
-                                if(diff > scrolllimit) diff = scrolllimit;
-                                
-                                diff /= 5;
-                                diff = Math.round(diff);
-                                diff *= 5;
+                if(leftmousedowned) {
+                    leftcancelnextclick = true;
 
-                                const maxpushduration = 180.0 // second
-                                const positionscroll = diff / scrolllimit * maxpushduration;
+                    let diff = param.x - leftmousedownpos;
+                    const scroll_range = 1000;
+                    if(diff > scroll_range) diff = scroll_range;
 
-                                if(leftmousedowned_lowedge)
-                                {
-                                    leftmousedowned_lowedge = false;
-                                    player.pause();
-                                    positionscrollstart = positionscroll;
-                                    startvideoposition = player.currentTime;
+                    diff = Math.round(diff);
 
-                                    intervalvideoposapplyier = setInterval(() => {
-                                        if((startvideoposition+positionscrollcurr) != player.currentTime)
-                                        {
-                                            player.currentTime = (startvideoposition+positionscrollcurr);
-                                            const progress = (player.currentTime / player.duration * 100).toFixed(2);
-                                            setLabelText(`moving - ${progress}% (${Math.round((player.currentTime - startvideoposition))}s)`);
-                                        }
-                                    }, 500);
-                                }
+                    const maxpushduration = 180.0 // second
+                    let positionscroll = Math.round(diff / scroll_range * maxpushduration);
 
-                                positionscrollcurr = positionscroll - positionscrollstart;
+                    const min_seeking_unit = 5.0;
+
+                    positionscroll /= min_seeking_unit;
+                    positionscroll = Math.round(positionscroll);
+                    positionscroll *= min_seeking_unit;
+                    positionscroll = Math.round(positionscroll);
+
+                    if(leftmouse_movestarted)
+                    {
+                        leftmouse_movestarted = false;
+
+                        console.log(`leftmouse_movestarted`);
+
+                        player.pause();
+                        positionscrollstart = positionscroll;
+                        startvideoposition = player.currentTime;
+
+                        intervalvideoposapplyier = setInterval(() => {
+                            if(positionscrollcurr != positionscrollcurr_past)
+                            {
+                                console.log(`intervalvideoposapplyier`);
+                                player.currentTime = (startvideoposition+positionscrollcurr);
+                                const progress = (player.currentTime / player.duration * 100).toFixed(2);
+                                setLabelText(`moving - ${progress}% (${Math.round((player.currentTime - startvideoposition))}s)`);
                             }
-                        }
-                        break;
-                    
-                    case 1: // middle
+                            positionscrollcurr_past = positionscrollcurr;
+                        }, 500);
+                    }
 
-                        break;
-                    
-                    case 2: // right
+                    positionscrollcurr = positionscroll - positionscrollstart;
 
-                        break;
+
+                }
+                else if(rightmousedowned) {
+                    rightcancelnextclick = true;
+                    let diff = param.x - rightmousedownpos;
+                    console.log(`right - ${diff}`);
+                    
+                    if(rightmouse_movestarted)
+                    {
+                        rightmouse_movestarted = false;
+                    }
+
                 }
 
             });
@@ -310,9 +337,18 @@
                 console.log(`path - ${path}`);
                 player = document.getElementById("player");
                 player.src = path;
-
-                player.play();
                 player.volume = 0.1;
+
+                // var promise = player.play();
+
+                // if(promise != undefined) {
+                //     promise.then(_ => {
+                //         console.log("promise returned Successed");
+                //     }).catch(error => {
+                //         console.log("promise returned failed");
+                //     });
+                // }
+
                 window.addEventListener("keydown", onKeydown);
             }
             else
