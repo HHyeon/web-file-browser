@@ -192,6 +192,8 @@
             let positionscrollstart;
             let positionscrollcurr;
             let startvideoposition;
+
+            let intervallyspeedinfodisplay = undefined;
             
             document.addEventListener("click", (param) => {
 
@@ -222,7 +224,8 @@
                         break;
                     
                     case 1: // middle
-
+                        player.playbackRate = 1.0;
+                        setLabelText(`playbackrate - ${player.playbackRate.toFixed(2)}`);
                         break;
                     
                     case 2: // right
@@ -242,8 +245,9 @@
                             leftmousedowned = false;
                             if(intervalvideoposapplyier != undefined)
                             {
-                                clearTimeout(intervalvideoposapplyier);
+                                clearInterval(intervalvideoposapplyier);
                                 intervalvideoposapplyier = undefined;
+                                console.log("intervalvideoposapplyier terminated");
                                 
                                 player.currentTime = startvideoposition + positionscrollcurr;
                                 const progress = (player.currentTime / player.duration * 100).toFixed(2);
@@ -261,6 +265,16 @@
                     case 2: // right
                         {
                             rightmousedowned = false;
+                            player.playbackRate = speed_currentpushstarts - speed_currentpush;
+
+                            if(intervallyspeedinfodisplay != undefined)
+                            {
+                                clearInterval(intervallyspeedinfodisplay);
+                                intervallyspeedinfodisplay = undefined;
+                                console.log("intervallyspeedinfodisplay terminated");
+                                
+                                setLabelText(`playbackrate - ${player.playbackRate.toFixed(2)}`);
+                            }
                         }
                         break;
                 }
@@ -268,8 +282,13 @@
             });
             
 
+            const min_seeking_unit = 0.1;
+            const scroll_range = 1000;
             let positionscrollcurr_past = -1;
             let positionscroll_past = -1;
+
+            let speed_currentpushstarts=-1;
+            let speed_currentpush;
 
             document.addEventListener("mousemove", (param) => {
 
@@ -277,15 +296,10 @@
                     leftcancelnextclick = true;
 
                     let diff = param.x - leftmousedownpos;
-                    const scroll_range = 1000;
                     if(diff > scroll_range) diff = scroll_range;
-
                     diff = Math.round(diff);
-
                     const maxpushduration = 180.0 // second
                     let positionscroll = Math.round(diff / scroll_range * maxpushduration);
-
-                    const min_seeking_unit = 5.0;
 
                     positionscroll /= min_seeking_unit;
                     positionscroll = Math.round(positionscroll);
@@ -296,16 +310,15 @@
                     {
                         leftmouse_movestarted = false;
 
-                        console.log(`leftmouse_movestarted`);
-
                         player.pause();
                         positionscrollstart = positionscroll;
                         startvideoposition = player.currentTime;
 
+
+                        console.log("intervalvideoposapplyier started");
                         intervalvideoposapplyier = setInterval(() => {
                             if(positionscrollcurr != positionscrollcurr_past)
                             {
-                                console.log(`intervalvideoposapplyier`);
                                 player.currentTime = (startvideoposition+positionscrollcurr);
                                 const progress = (player.currentTime / player.duration * 100).toFixed(2);
                                 setLabelText(`moving - ${progress}% (${Math.round((player.currentTime - startvideoposition))}s)`);
@@ -320,13 +333,26 @@
                 }
                 else if(rightmousedowned) {
                     rightcancelnextclick = true;
-                    let diff = param.x - rightmousedownpos;
-                    console.log(`right - ${diff}`);
+
+                    let diff = rightmousedownpos - param.x;
+                    if(diff > scroll_range) diff = scroll_range;
+                    diff = Math.round(diff);
+                    const maxpushamount = 1.0;
                     
                     if(rightmouse_movestarted)
                     {
                         rightmouse_movestarted = false;
+                        speed_currentpushstarts = player.playbackRate;
+
+                        console.log("intervallyspeedinfodisplay started");
+                        intervallyspeedinfodisplay = setInterval(() => {
+                            setLabelText(`playbackrate - ${(speed_currentpushstarts - speed_currentpush).toFixed(2)}`);
+                        }, 100);
                     }
+
+                    speed_currentpush = diff / scroll_range * maxpushamount;
+
+                    // console.log(`push - ${speed_currentpushstarts - speed_currentpush}`);
 
                 }
 
