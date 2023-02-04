@@ -5,7 +5,7 @@
     
 <style>
 
-    html {
+    * {
         margin: 0px;
     }
 
@@ -112,7 +112,30 @@
         align-items: center;
         user-select: none;
     }
+
     .buttonlayout:hover {cursor: pointer;}
+
+    .search-panel {
+        position: fixed;
+        left: 0;
+        bottom: 0%;
+        width: 100%;
+        height: 5%;
+        background-color: rgba(255, 255, 255, 0.3);
+        visibility: hidden;
+        text-align: center;
+    }
+
+    .input_search {
+        margin-top: 10px;
+        width: 80%;
+        height: 50%;
+        border: none;
+        outline: none;
+        background: transparent;
+        font-size: x-large;
+        text-align: center;
+    }
 
 </style>
 </head> 
@@ -120,7 +143,6 @@
 <body id="body">
 
     <div class="top-layout">
-
         <div class="control">
             <div class="buttonlayout" id="btnback">Back</div>
             <div class="buttonlayout" id="btnprev">Prev</div>
@@ -128,11 +150,13 @@
         </div>
         
         <div class="FilesPanel" id="FilesPanel"></div>
+    </div>
 
+    <div class="search-panel">
+        <input type="text" class="input_search" />
     </div>
 
     <script src="script.js"></script>
-
 
 </body>
 </html> 

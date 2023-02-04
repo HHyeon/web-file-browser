@@ -2,8 +2,45 @@
 const urlStr = window.location.href;
 const url = new URL(urlStr);
 const urlParams = url.searchParams;
-const path = urlParams.get('p');
+const parampath = urlParams.get('p');
+const paramfind = urlParams.get('f');
 const drivelist = ["drv0", "drv1"];
+
+const input_search = document.querySelector(".input_search");
+let input_search_typing = false;
+
+input_search.onkeypress = function(e) {
+    let chr = String.fromCharCode(e.which);
+    console.log(`chr - ${chr}`);
+    if(chr == '/') return false;
+}
+
+let searchingsession = false;
+let filteredlsit;
+
+let store_dirlistshowposition;
+let store_dirlistshowposition_past;
+let store_itemcount;
+
+function submitsearching(findingstr) {
+    if(findingstr.length == 0) return;
+
+    console.log(`search - ${findingstr}`);
+    
+    filteredlsit = dirlist.filter(e => e.includes(findingstr));
+
+    searchingsession = true;
+
+    store_dirlistshowposition = dirlistshowposition;
+    store_dirlistshowposition_past = dirlistshowposition_past;
+    store_itemcount = itemcount;
+    
+    dirlistshowposition=0;
+    dirlistshowposition_past=-1;
+    itemcount=filteredlsit.length;
+
+    showcurrentpage(-1);
+}
 
 document.addEventListener('readystatechange', event => { 
     // When HTML/DOM elements are ready:
@@ -17,19 +54,58 @@ document.addEventListener('readystatechange', event => {
     }
 });
 
-var ctrldown = 0;
+let search_panel_visible_state = false;
+
+let ctrldown = false;
 document.addEventListener("keydown", function(e) {
+    console.log(e.key);
+    
     if(e.key == "Control") {
-        ctrldown = 1;
+        ctrldown = true;
     }
-});
-document.addEventListener("keyup", function(e) {
-    if(e.key == "Control") {
-        ctrldown = 0;
+    else if(e.key == 'Escape') {
+        searchingsession = false;
+        
+        dirlistshowposition=store_dirlistshowposition;
+        dirlistshowposition_past=store_dirlistshowposition_past;
+        itemcount=store_itemcount;
+        
+        showcurrentpage(-1);
+
+    }
+    else if(e.key == '/') {
+        search_panel_visible_state = !search_panel_visible_state;
+
+        if(search_panel_visible_state) {
+            document.querySelector(".search-panel").style.visibility = "visible";
+            input_search.focus();
+            input_search.value="";
+            input_search_typing = true;
+        }
+        else {
+            document.querySelector(".search-panel").style.visibility = "hidden";
+            input_search_typing = false;
+        }
+
+        console.log();
+    }
+    else if(e.key == 'Enter') {
+        if(input_search_typing) {
+            input_search_typing = false;
+            document.querySelector(".search-panel").style.visibility = "hidden";
+            submitsearching(input_search.value);
+            search_panel_visible_state = false;
+        }
     }
 });
 
-window.addEventListener("scroll", function(element) {
+document.addEventListener("keyup", function(e) {
+    if(e.key == "Control") {
+        ctrldown = false;
+    }
+});
+
+document.addEventListener("scroll", function(element) {
     if(window.innerHeight + window.scrollY >= FilesPanel.scrollHeight)
     {
         console.log("reached end")
@@ -37,45 +113,51 @@ window.addEventListener("scroll", function(element) {
 });
 
 function nav_back() {
-    if(path == null) return;
+    if(parampath == null) return;
 
-    if(drivelist.includes(path))
+    if(drivelist.includes(parampath)) // reached top
     {
-        window.location = window.location.href.split("?")[0];
+        if(ctrldown) {
+            const nextlink = window.location.href.split("?")[0];
+            window.open(nextlink, "_blank");
+        }
+        else {
+            window.location = window.location.href.split("?")[0];
+        }
     }
     else
     {
-        var nextpath = path.substring(0, path.lastIndexOf('/'));
-        const nextlink = `?p=${nextpath}`;
-        console.log(nextlink);
-        location.replace(nextlink);
+        if(ctrldown) {
+            let nextpath = parampath.substring(0, parampath.lastIndexOf('/'));
+            const nextlink = `?p=${nextpath}`;
+            window.open(nextlink, "_blank");
+        }
+        else {
+            let nextpath = parampath.substring(0, parampath.lastIndexOf('/'));
+            const nextlink = `?p=${nextpath}`;
+            console.log(nextlink);
+            location.replace(nextlink);
+        }
     }
 };
-
-window.addEventListener("keyup", function(element) {
-    if(element.key == 'q')
-    {
-        nav_back();
-    }
-});
 
 document.getElementById("btnback").addEventListener("click", function() {
     nav_back();
 });
 
-var btnprev = document.getElementById("btnprev");
+let btnprev = document.getElementById("btnprev");
 btnprev.addEventListener("click", function() {
-    showcurrentpage(0); // 1 to next , 0 to prev
+    showcurrentpage(0); // 1 to next , 0 to prev, -1 to load current pos
 });
 
-var btnnext = document.getElementById("btnnext");
+let btnnext = document.getElementById("btnnext");
 btnnext.addEventListener("click", function() {
-    showcurrentpage(1); // 1 to next , 0 to prev
+    showcurrentpage(1); // 1 to next , 0 to prev, -1 to load current pos
 });
 
-function dirseek(path) {
-    var xmlhttp = new XMLHttpRequest();
-    var url=`dirseek.php?x=${path}`;
+function dirseek(param) {
+    let xmlhttp = new XMLHttpRequest();
+    let url=`dirseek.php?x=${param}`;
     xmlhttp.open("GET", url, false);
     xmlhttp.send(null);
     return xmlhttp.responseText;
@@ -84,23 +166,31 @@ function dirseek(path) {
 function imgclicked(element) {
     console.log("imgclicked");
 
-    var newpage = `./imgview.html`;
+    let newpage = `./imgview.html`;
 
     window.open(newpage, "_blank");
 }
 
 function genimage(ididx, srcpath) {
-    var html=`<img id=id${ididx} class="imageitem" src="${srcpath}" loading=lazy onclick="imgclicked(this.id)"></img>`;
+    let html=`<img id=id${ididx} class="imageitem" src="${srcpath}" loading=lazy onclick="imgclicked(this.id)"></img>`;
     return html;
 }
 
-var folderslist = [];
+let folderslist = [];
 
 function folderclicked(element) {
     console.log(`clicked folder ${element}`);
-    var id = element.substring(element.lastIndexOf("id")+2);
+    let id = element.substring(element.lastIndexOf("id")+2);
     // console.log(`id : ${id}`);
-    var nextpath = folderslist.find(x=> x.id == id).data;
+
+    let nextpath;
+
+    // if(searchingsession) {
+    //     // TODO 
+    // }
+    // else {
+        nextpath = folderslist.find(x=> x.id == id).data;
+    // }
     
     if(ctrldown)
     {
@@ -117,16 +207,16 @@ function folderclicked(element) {
 
 }
 
-function genfolder(ididx, path) {
-    var val = path.substring(path.lastIndexOf('/')+1);
+function genfolder(ididx, param) {
+    let val = param.substring(param.lastIndexOf('/')+1);
 
-    var keyvalue = {
+    let keyvalue = {
         id: ididx,
-        data: path
+        data: param
     };
     folderslist.push(keyvalue);
     
-    var html=`
+    let html=`
     <div id=id${ididx} class="diritem" onclick="folderclicked(this.id)">
     <div class="vertical-center">
         <h5 class="itemlabel">Directory</h5>
@@ -137,30 +227,30 @@ function genfolder(ididx, path) {
     return html;
 }
 
-var videoslist = [];
+let videoslist = [];
 
 function mp4clicked(element) {
     console.log(`clicked mp4 ${element}`);
-    var id = element.substring(element.lastIndexOf("id")+2);
-    var nextpath = videoslist.find(x=> x.id == id).data;
+    let id = element.substring(element.lastIndexOf("id")+2);
+    let nextpath = videoslist.find(x=> x.id == id).data;
 
     console.log(`nextpath : ${nextpath}`);
     
-    var newpage = `./videoview.html?p=${nextpath}`;
+    let newpage = `./videoview.html?p=${nextpath}`;
     console.log(newpage);
     window.open(newpage, "_blank");
 }
 
-function genmp4(ididx, path) {
-    var name = path.substring(path.lastIndexOf('/')+1);
-    var keyvalue = {
+function genmp4(ididx, param) {
+    let name = param.substring(param.lastIndexOf('/')+1);
+    let keyvalue = {
         id: ididx,
-        data: path
+        data: param
     };
     videoslist.push(keyvalue);
-    var html=`
+    let html=`
     <div id=id${ididx} class="videoview" onclick="mp4clicked(this.id)">
-    <video preload="metadata" src="${path}#t=10.0"></video>
+    <video preload="metadata" src="${param}#t=20.0"></video>
     <h6>${name}</h6>
     </div>
     `;
@@ -168,53 +258,69 @@ function genmp4(ididx, path) {
 }
 
 
-var FilesPanel = document.getElementById("FilesPanel");
-var title = document.getElementById("title");
+let FilesPanel = document.getElementById("FilesPanel");
+let title = document.getElementById("title");
 
-var dirlist = null;
-var dirlistshowposition=0;
-var dirlistshowposition_past=-1;
+let dirlist = null;
 const dirlistmaxshow=16;
-var itemcount=0;
+
+let dirlistshowposition=0;
+let dirlistshowposition_past=-1;
+let itemcount=0;
 
 function showcurrentpage(isnext) {
-    
-    if(isnext)
+    folderslist = [];
+    videoslist = [];
+
+    if(isnext == 1)
     {
         if(dirlistshowposition+dirlistmaxshow <= itemcount)
         {
             dirlistshowposition += dirlistmaxshow;
         }
     }
-    else
+    else if(isnext == 0)
     {
         if(dirlistshowposition >= dirlistmaxshow)
         {
             dirlistshowposition -= dirlistmaxshow;
         }
     }
+    else if(isnext == -1)
+    {
 
-    if(dirlistshowposition == dirlistshowposition_past)
+    }
+    else
     {
         return;
     }
+
+    if(dirlistshowposition == dirlistshowposition_past && isnext != -1)
+    {
+        return;
+    }
+    
     dirlistshowposition_past = dirlistshowposition;
 
     btnprev.innerText = `Prev - ${Math.floor(dirlistshowposition/dirlistmaxshow)}`;
     btnnext.innerText = `Next - ${Math.floor(itemcount/dirlistmaxshow) - Math.floor(dirlistshowposition/dirlistmaxshow)}`;
 
-    var contents = "";
-    var until = dirlistshowposition + dirlistmaxshow;
+    let contents = "";
+    let until = dirlistshowposition + dirlistmaxshow;
     if(until > itemcount) until = itemcount;
 
     console.log(`show ${dirlistshowposition} ~ ${until}`);
-    for(var ididx=dirlistshowposition;ididx<until;ididx++)
+    for(let ididx=dirlistshowposition;ididx<until;ididx++)
     {
-        element = dirlist[ididx];
+        let curr = `${parampath}`;
+        if(parampath[parampath.length-1] != '/') curr += '/';
 
-        var curr = `${path}`;
-        if(path[path.length-1] != '/') curr += '/';
-        curr += `${element}`;
+        if(searchingsession) {
+            curr += `${filteredlsit[ididx]}`;
+        }
+        else {
+            curr += `${dirlist[ididx]}`;
+        }
 
         const dot = curr.lastIndexOf('.');
 
@@ -225,7 +331,7 @@ function showcurrentpage(isnext) {
         }
         else
         {
-            var fileext=curr.substring(dot+1);
+            let fileext=curr.substring(dot+1);
             // console.log(`fileext - ${fileext}`);
 
             if(fileext == "mp4")
@@ -245,10 +351,9 @@ function showcurrentpage(isnext) {
     FilesPanel.innerHTML=contents;
 }
 
-
-if(path != null)
+if(parampath != null)
 {
-    const jsonraw=dirseek(path);
+    const jsonraw=dirseek(parampath);
     const jsondata=JSON.parse(jsonraw); 
     
     if(jsondata["ret"])
@@ -258,16 +363,21 @@ if(path != null)
         dirlist = jsondata["data"];
         dirlist.sort();
         itemcount = dirlist.length;
-        const dirname = path.substring(path.lastIndexOf('/')+1);
+        const dirname = parampath.substring(parampath.lastIndexOf('/')+1);
         title.innerText = `${dirname}/${itemcount} items`;
 
         // if(itemcount > dirlistmaxshow)
         // {
-        //     var idx= Math.floor(itemcount / dirlistmaxshow);
+        //     let idx= Math.floor(itemcount / dirlistmaxshow);
         //     btnnext.innerText = `Next - ${idx}`;
         // }
-    
-        showcurrentpage(0); // 1 to next , 0 to prev
+
+        if(paramfind != null) {
+            submitsearching(paramfind);
+        }
+        else {
+            showcurrentpage(-1); // 1 to next , 0 to prev , -1 to load current pos
+        }
 
         console.info(`folderslist - ${folderslist.length}`);
         console.info(`videoslist - ${videoslist.length}`);
@@ -280,8 +390,8 @@ if(path != null)
 }
 else
 {
-    var contents = "";
-    var ididx=0;
+    let contents = "";
+    let ididx=0;
 
     drivelist.forEach(element => {
         contents += genfolder(ididx, element);
