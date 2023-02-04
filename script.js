@@ -160,8 +160,8 @@ function genmp4(ididx, path) {
     videoslist.push(keyvalue);
     var html=`
     <div id=id${ididx} class="videoview" onclick="mp4clicked(this.id)">
-    <video class="videoitem" preload="metadata" src="${path}#t=10.0"></video>
-    <h6 class="itemlabel">${name}</h6>
+    <video preload="metadata" src="${path}#t=10.0"></video>
+    <h6>${name}</h6>
     </div>
     `;
     return html;

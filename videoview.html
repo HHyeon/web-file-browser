@@ -109,11 +109,37 @@
                 setLabelText(`volumn: ${Math.round(player.volume*100)}%`);
             }
 
+            function numberpadseeking(num) {
+                if(num >= 0 && num <= 9)
+                {
+                    player.currentTime = (player.duration / 10) * num;
+                    const progress = (player.currentTime / player.duration * 100).toFixed(2);
+                    setLabelText(`(${progress}%)`);
+                }
+                else
+                {
+                    console.log("numberpadseeking - not a number");
+                }
+            }
+
             function onKeydown(param)
             {
                 console.log(param.key);
 
                 switch(param.key){
+                    case '0': 
+                    case '1': 
+                    case '2': 
+                    case '3': 
+                    case '4': 
+                    case '5': 
+                    case '6': 
+                    case '7': 
+                    case '8': 
+                    case '9': 
+                        numberpadseeking(Number(param.key));
+                    break;
+
                     case ' ':
                         pauseplay();
                         break;
@@ -171,7 +197,6 @@
                             player.currentTime = move;   
 
                             const progress = (player.currentTime / player.duration * 100).toFixed(2);
-
                             setLabelText(`- ${moveunit}s (${progress}%)`);
                         }
                         break;
@@ -346,8 +371,9 @@
 
                         console.log("intervallyspeedinfodisplay started");
                         intervallyspeedinfodisplay = setInterval(() => {
+                            player.playbackRate = speed_currentpushstarts - speed_currentpush;
                             setLabelText(`playbackrate - ${(speed_currentpushstarts - speed_currentpush).toFixed(2)}`);
-                        }, 100);
+                        }, 200);
                     }
 
                     speed_currentpush = diff / scroll_range * maxpushamount;
