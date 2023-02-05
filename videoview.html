@@ -297,28 +297,22 @@
             });
 
             
-            let nextseekavailable = false;
+            let player_seeking_available = false;
             player.addEventListener('seeked', () => {
                 if(leftmousedowned) {
                     player_seeking();
-                    nextseekavailable = true;
+                    player_seeking_available = true;
                 }
             });
 
             function player_seeking() {
-                // if(positionscrollcurr != positionscrollcurr_past)
-                // {
-                    player.currentTime = (startvideoposition+positionscrollcurr);
-                    const progress = (player.currentTime / player.duration * 100).toFixed(2);
-                    setLabelText(`moving - ${progress}% (${Math.round((player.currentTime - startvideoposition))}s)`);
-                // }
-                // positionscrollcurr_past = positionscrollcurr;
+                const progress = (player.currentTime / player.duration * 100).toFixed(2);
+                setLabelText(`moving - ${progress}% (${Math.round((player.currentTime - startvideoposition))}s)`);
+                player.currentTime = (startvideoposition+positionscrollcurr);
             }
 
-            const min_seeking_unit = 1.0;
+            const min_seeking_unit = 0.1;
             const scroll_range = 1000;
-            let positionscrollcurr_past = -1;
-            let positionscroll_past = -1;
 
             let speed_currentpushstarts=-1;
             let speed_currentpush;
@@ -348,14 +342,14 @@
                         positionscrollstart = positionscroll;
                         startvideoposition = player.currentTime;
 
-                        nextseekavailable = true;
+                        player_seeking_available = true;
                     }
 
                     positionscrollcurr = positionscroll - positionscrollstart;
 
-                    if(nextseekavailable) {
+                    if(player_seeking_available) {
                         player_seeking();
-                        nextseekavailable = false;
+                        player_seeking_available = false;
                     }
 
                 }
