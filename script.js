@@ -8,8 +8,22 @@ const drivelist = ["drv0", "drv1"];
 
 const input_search = document.querySelector(".input_search");
 let input_search_typing = false;
+let every_input_disable = false;
+
+function bodybackgroundcolor_default() {
+    document.querySelector('.loadinglight').style.backgroundColor = 'greenyellow';
+}
+
+function bodybackgroundcolor_busy_exiting() {
+    document.querySelector('.loadinglight').style.backgroundColor = 'yellow';
+}
+
+function bodybackgroundcolor_busy() {
+    document.querySelector('.loadinglight').style.backgroundColor = 'red';
+}
 
 input_search.onkeypress = function(e) {
+    if(every_input_disable) return;
     let chr = String.fromCharCode(e.which);
     // console.log(`chr - ${chr}`);
     if(chr == '/') return false;
@@ -42,36 +56,25 @@ function submitsearching(findingstr) {
     showcurrentpage(-1);
 }
 
-document.addEventListener('readystatechange', event => { 
-    // When HTML/DOM elements are ready:
-    if (event.target.readyState === "interactive") {   //does same as:  ..addEventListener("DOMContentLoaded"..
-        console.log("interactive");
-    }
-
-    // When window loaded ( external resources are loaded too- `css`,`src`, etc...) 
-    if (event.target.readyState === "complete") {
-        console.log("complete");
-    }
-});
-
 let videothumbnails_updating = false;
 let videothumbnails_updating_readynext = false;
 let search_panel_visible_state = false;
 let ctrldown = false;
 
 document.addEventListener("keydown", function(e) {
-    console.log(e.key);
-    
-    if(e.key == "Control") {
-        ctrldown = true;
-    }
-    else if(e.key == ' ') {
+    if(e.key == ' ') {
         if(videothumbnails_updating) {
             videothumbnails_updating_finish();
         }
         else {
             videothumbnails_updating_start();
         }
+    }
+    if(every_input_disable) return;
+    console.log(e.key);
+    
+    if(e.key == "Control") {
+        ctrldown = true;
     }
     else if(e.key == 'Escape') {
         
@@ -121,12 +124,14 @@ document.addEventListener("keydown", function(e) {
 });
 
 document.addEventListener("keyup", function(e) {
+    if(every_input_disable) return;
     if(e.key == "Control") {
         ctrldown = false;
     }
 });
 
 document.addEventListener("scroll", function(element) {
+    if(every_input_disable) return;
     if(window.innerHeight + window.scrollY >= FilesPanel.scrollHeight)
     {
         console.log("reached end")
@@ -163,16 +168,19 @@ function nav_back() {
 };
 
 document.getElementById("btnback").addEventListener("click", function() {
+    if(every_input_disable) return;
     nav_back();
 });
 
 let btnprev = document.getElementById("btnprev");
 btnprev.addEventListener("click", function() {
+    if(every_input_disable) return;
     showcurrentpage(0); // 1 to next , 0 to prev, -1 to load current pos
 });
 
 let btnnext = document.getElementById("btnnext");
 btnnext.addEventListener("click", function() {
+    if(every_input_disable) return;
     showcurrentpage(1); // 1 to next , 0 to prev, -1 to load current pos
 });
 
@@ -185,6 +193,7 @@ function dirseek(param) {
 };
 
 function imgclicked(element) {
+    if(every_input_disable) return;
     console.log("imgclicked");
 
     let newpage = `./imgview.html`;
@@ -200,6 +209,7 @@ function genimage(ididx, srcpath) {
 let folderslist = [];
 
 function folderclicked(element) {
+    if(every_input_disable) return;
     console.log(`clicked folder ${element}`);
     let id = element.substring(element.lastIndexOf("id")+2);
     // console.log(`id : ${id}`);
@@ -251,6 +261,7 @@ function genfolder(ididx, param) {
 let videoslist = [];
 
 function mp4clicked(element) {
+    if(every_input_disable) return;
     console.log(`clicked mp4 ${element}`);
     let id = element.substring(element.lastIndexOf("id")+2);
     let nextpath = videoslist.find(x=> x.id == id).data;
@@ -371,6 +382,8 @@ function showcurrentpage(isnext) {
 
     FilesPanel.innerHTML=contents;
 
+    bodybackgroundcolor_busy();
+    every_input_disable = true;
     videothumbnails_updating_readynext = false;
     everyvideocounting = 0;
     everyvideo = document.querySelectorAll('video');
@@ -390,6 +403,8 @@ function showcurrentpage(isnext) {
                 }
                 else {
                     console.log("videothumbnails_updating Ended");
+                    bodybackgroundcolor_default();
+                    every_input_disable = false;
                 }
             }
 
@@ -402,6 +417,8 @@ let everyvideo;
 let everyvideocounting = 0;
 
 function update_next_everyvideothumbnail() {
+    bodybackgroundcolor_busy();
+    every_input_disable = true;
     const thumbnailinterval = 60.0;
     everyvideo.forEach(e1 => {
         if(e1.currentTime + thumbnailinterval > e1.duration) {
@@ -427,7 +444,11 @@ function videothumbnails_updating_start() {
 }
 
 function videothumbnails_updating_finish() {
-    videothumbnails_updating = false;
+    if(videothumbnails_updating) {
+        console.log("stopping updating thumbnail videos");
+        bodybackgroundcolor_busy_exiting();
+        videothumbnails_updating = false;
+    }
 }
 
 if(parampath != null)
