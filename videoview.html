@@ -24,16 +24,19 @@
 	            vertical-align: middle;
                 z-index: 0;
             }
-
-            .overlay {
-                position:absolute;
+            
+            #label1 {
+                position:fixed;
                 left: 2%;
                 top: 2%;
-                z-index: 1;
+                background-color: rgba(0, 0, 0, 0.2);
             }
             
-            .overlay #label1 {
-                background-color: rgba(0, 0, 0, 0.171);
+            #label2 {
+                position:fixed;
+                right: 2%;
+                top: 2%;
+                background-color: rgba(0, 0, 0, 0.2);
             }
 
         </style>
@@ -43,12 +46,16 @@
         <div class="container">
             <video id="player" buffered autoplay></video>
 
-            <div class="overlay">
-                <h1 id="label1"></h1>
-            </div>
+            <h1 id="label1"></h1>
+            <h1 id="label2"></h1>
         </div>
         
         <script>
+
+            player.addEventListener("timeupdate", (event) => {
+                const progress = (player.currentTime / player.duration * 100).toFixed(2);
+                document.getElementById("label2").innerText=`(${progress}%)`;
+            });
             
             const label1 = document.getElementById("label1");
             let delayedoffTimer = undefined;
@@ -89,7 +96,7 @@
 
             function volumncontrol(updown)
             {
-                const unit = 0.05;
+                const unit = 0.01;
                 let volumnset = player.volume;
                 if(updown) {
                     if(volumnset + unit > 1.0)
