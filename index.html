@@ -137,10 +137,23 @@
         text-align: center;
     }
 
+    .loadingpanel {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        z-index: 0;
+        visibility: hidden;
+    }
+
 </style>
 </head> 
 
 <body id="body">
+
+    <div class="loadingpanel"></div>
 
     <div class="top-layout">
         <div class="control">
@@ -155,6 +168,7 @@
     <div class="search-panel">
         <input type="text" class="input_search" />
     </div>
+
 
     <script src="script.js"></script>
 

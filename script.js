@@ -54,14 +54,24 @@ document.addEventListener('readystatechange', event => {
     }
 });
 
+let videothumbnails_updating = false;
+let videothumbnails_updating_readynext = false;
 let search_panel_visible_state = false;
-
 let ctrldown = false;
+
 document.addEventListener("keydown", function(e) {
     console.log(e.key);
     
     if(e.key == "Control") {
         ctrldown = true;
+    }
+    else if(e.key == ' ') {
+        if(videothumbnails_updating) {
+            videothumbnails_updating_finish();
+        }
+        else {
+            videothumbnails_updating_start();
+        }
     }
     else if(e.key == 'Escape') {
         
@@ -360,6 +370,64 @@ function showcurrentpage(isnext) {
     }
 
     FilesPanel.innerHTML=contents;
+
+    videothumbnails_updating_readynext = false;
+    everyvideocounting = 0;
+    everyvideo = document.querySelectorAll('video');
+    everyvideo.forEach(e => {
+        e.addEventListener('seeked', () => {
+            
+            everyvideocounting++;
+            if(everyvideocounting == everyvideo.length) {
+                console.log("videos loading done !!!");
+        
+                everyvideocounting = 0;
+                videothumbnails_updating_readynext = true;
+                
+                if(videothumbnails_updating) {
+                    console.log("update next !!!");
+                    update_next_everyvideothumbnail();
+                }
+                else {
+                    console.log("videothumbnails_updating Ended");
+                }
+            }
+
+        });
+        
+    });
+}
+
+let everyvideo;
+let everyvideocounting = 0;
+
+function update_next_everyvideothumbnail() {
+    const thumbnailinterval = 60.0;
+    everyvideo.forEach(e1 => {
+        if(e1.currentTime + thumbnailinterval > e1.duration) {
+            e1.currentTime = 0.0;
+        }
+        else {
+            e1.currentTime += thumbnailinterval;
+        }
+    });
+}
+
+function videothumbnails_updating_start() {
+    if(!videothumbnails_updating_readynext) {
+        console.log("videothumbnails_updating_start - not ready");
+        return;
+    }
+    
+    if(!videothumbnails_updating) {
+        videothumbnails_updating = true;
+        console.log("starting updating thumbnail videos");
+        update_next_everyvideothumbnail();
+    }
+}
+
+function videothumbnails_updating_finish() {
+    videothumbnails_updating = false;
 }
 
 if(parampath != null)
@@ -375,7 +443,11 @@ if(parampath != null)
         dirlist.sort();
         itemcount = dirlist.length;
         const dirname = parampath.substring(parampath.lastIndexOf('/')+1);
-        title.innerText = `${dirname}/${itemcount} items`;
+
+        if(paramfind != null) 
+            title.innerText = `${dirname} - ${paramfind}`;
+        else
+            title.innerText = `${dirname}/${itemcount} items`;
 
         // if(itemcount > dirlistmaxshow)
         // {
