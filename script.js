@@ -382,35 +382,36 @@ function showcurrentpage(isnext) {
 
     FilesPanel.innerHTML=contents;
 
-    bodybackgroundcolor_busy();
-    every_input_disable = true;
-    videothumbnails_updating_readynext = false;
-    everyvideocounting = 0;
     everyvideo = document.querySelectorAll('video');
-    everyvideo.forEach(e => {
-        e.addEventListener('seeked', () => {
-            
-            everyvideocounting++;
-            if(everyvideocounting == everyvideo.length) {
-                console.log("videos loading done !!!");
-        
-                everyvideocounting = 0;
-                videothumbnails_updating_readynext = true;
+    if(everyvideo.length > 0) {
+        bodybackgroundcolor_busy();
+        every_input_disable = true;
+        videothumbnails_updating_readynext = false;
+        everyvideocounting = 0;
+        everyvideo.forEach(e => {
+            e.addEventListener('seeked', () => {
                 
-                if(videothumbnails_updating) {
-                    console.log("update next !!!");
-                    update_next_everyvideothumbnail();
+                everyvideocounting++;
+                if(everyvideocounting == everyvideo.length) {
+                    console.log("videos loading done !!!");
+            
+                    everyvideocounting = 0;
+                    videothumbnails_updating_readynext = true;
+                    
+                    if(videothumbnails_updating) {
+                        console.log("update next !!!");
+                        update_next_everyvideothumbnail();
+                    }
+                    else {
+                        console.log("videothumbnails_updating Ended");
+                        bodybackgroundcolor_default();
+                        every_input_disable = false;
+                    }
                 }
-                else {
-                    console.log("videothumbnails_updating Ended");
-                    bodybackgroundcolor_default();
-                    every_input_disable = false;
-                }
-            }
 
+            });
         });
-        
-    });
+    }
 }
 
 let everyvideo;
