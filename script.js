@@ -168,7 +168,7 @@ function nav_back() {
 };
 
 let mouseareaenter = false;
-let mouseareaenter_past = true;
+let mouseareaenter_past = false;
 document.addEventListener("mousemove", (param) => {
     if(param.y < window.innerHeight / 20)
         mouseareaenter = true;
