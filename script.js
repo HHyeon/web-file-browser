@@ -167,6 +167,23 @@ function nav_back() {
     }
 };
 
+let mouseareaenter = false;
+let mouseareaenter_past = true;
+document.addEventListener("mousemove", (param) => {
+    if(param.y < window.innerHeight / 20)
+        mouseareaenter = true;
+    else 
+        mouseareaenter = false;
+
+    if(mouseareaenter && !mouseareaenter_past) {
+        document.querySelector(".control").style.visibility="visible";
+    }
+    else if(!mouseareaenter && mouseareaenter_past) {
+        document.querySelector(".control").style.visibility="hidden";
+    }
+    mouseareaenter_past = mouseareaenter;
+});
+
 document.getElementById("btnback").addEventListener("click", function() {
     if(every_input_disable) return;
     nav_back();
@@ -282,7 +299,7 @@ function genmp4(ididx, param) {
     videoslist.push(keyvalue);
     let html=`
     <div id=id${ididx} class="videoview" onclick="mp4clicked(this.id)">
-    <video preload="metadata" src="${param}#t=20.0"></video>
+    <video preload="metadata" src="${param}#t=5.0"></video>
     <h6>${name}</h6>
     </div>
     `;
@@ -294,7 +311,7 @@ let FilesPanel = document.getElementById("FilesPanel");
 let title = document.getElementById("title");
 
 let dirlist = null;
-const dirlistmaxshow=16;
+const dirlistmaxshow=20;
 
 let dirlistshowposition=0;
 let dirlistshowposition_past=-1;
@@ -420,7 +437,7 @@ let everyvideocounting = 0;
 function update_next_everyvideothumbnail() {
     bodybackgroundcolor_busy();
     every_input_disable = true;
-    const thumbnailinterval = 60.0;
+    const thumbnailinterval = 30.0;
     everyvideo.forEach(e1 => {
         if(e1.currentTime + thumbnailinterval > e1.duration) {
             e1.currentTime = 0.0;

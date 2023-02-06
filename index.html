@@ -16,9 +16,11 @@
     }
 
     .top-layout {
+        width: 100%;
         height: 100%;
-        display: grid;
-        grid-template-rows: 30px auto;
+        position: fixed;
+        left: 0;
+        top: 0;
     }
 
     .FilesPanel {
@@ -26,8 +28,9 @@
         height: 100%;
         display: grid;
         grid-auto-rows: 1fr;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(5, 1fr);
         grid-template-rows: repeat(4, 1fr);
+        z-index: 0;
     }
 
     .imageitem {
@@ -42,7 +45,7 @@
     }
 
     .imageitem:hover {
-        background: gray;
+        border-color: cornflowerblue;
     }
     
     .diritem {
@@ -54,7 +57,7 @@
     }
 
     .diritem:hover {
-        background: gray;
+        border-color: cornflowerblue;
     }
 
     .vertical-center {
@@ -70,23 +73,21 @@
     }
 
     .videoview {
+        position:relative;
         margin: 5px;
         text-align: center;
         border: solid lightgray;
         user-select: none;
-        display: grid;
-        grid-template-rows: auto auto ;
     }
     
     .videoview:hover {
-        background: gray;
+        border-color: cornflowerblue;
     }
 
     .videoview h6 {
-        margin: 0px;
-        height: 10%;
-        margin-left: 10%;
-        margin-right: 10%;
+        background-color: rgba(0, 0, 0, 0.2);
+        position: absolute;
+        bottom: 0;
         word-wrap: break-word;
         word-break: break-all;
         text-align: center;
@@ -94,12 +95,30 @@
 
     video {
         object-fit: cover;
+        min-height: auto;
         width: 100%;
+        height: 100%;
     }
 
     .control {
+        visibility: hidden;
+        width: 100%;
+        position: fixed;
+        left: 0;
+        top: 0;
         display: flex;
         justify-content: center;
+        background-color: rgba(0, 0, 0, 0.5);
+        padding-top: 10px;
+        padding-bottom: 10px;
+        z-index: 0;
+    }
+
+    .loadinglight {
+        width: 40px;
+        height: 25px;
+        background-color: greenyellow;
+        border-radius: 5px;
     }
 
     .buttonlayout {
@@ -121,9 +140,12 @@
         bottom: 0%;
         width: 100%;
         height: 5%;
-        background-color: rgba(255, 255, 255, 0.3);
+        background-color: rgba(0, 0, 0, 0.3);
         visibility: hidden;
         text-align: center;
+    }
+    .search-panel input {
+        color: white;
     }
 
     .input_search {
@@ -137,31 +159,22 @@
         text-align: center;
     }
 
-    .loadinglight {
-        position: absolute;
-        left: 5;
-        top: 5;
-        width: 40px;
-        height: 25px;
-        background-color: greenyellow;
-        border-radius: 5px;
-    }
-
 </style>
 </head> 
 
 <body id="body">
 
-    <div class="loadinglight"></div>
 
     <div class="top-layout">
+        
+        <div class="FilesPanel" id="FilesPanel"></div>
+
         <div class="control">
+            <div class="loadinglight"></div>
             <div class="buttonlayout" id="btnback">Back</div>
             <div class="buttonlayout" id="btnprev">Prev</div>
             <div class="buttonlayout" id="btnnext">Next</div>
         </div>
-        
-        <div class="FilesPanel" id="FilesPanel"></div>
     </div>
 
     <div class="search-panel">
