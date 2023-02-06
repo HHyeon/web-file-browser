@@ -462,7 +462,8 @@ if(parampath != null)
         // console.info(`Successed`);
     
         dirlist = jsondata["data"];
-        dirlist.sort();
+        // dirlist.sort();
+        dirlist.reverse();
         itemcount = dirlist.length;
         const dirname = parampath.substring(parampath.lastIndexOf('/')+1);
 

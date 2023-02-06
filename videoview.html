@@ -11,6 +11,9 @@
             body {
                 background-color: rgb(25, 25, 25);
                 color: aliceblue;
+                overflow-y: hidden; /* Hide vertical scrollbar */
+                overflow-x: hidden; /* Hide horizontal scrollbar */
+                text-align: center;
             }
 
             .container {
@@ -19,9 +22,9 @@
 
             .container video {
                 position: relative;
-                width: 100%;
-                height: auto;
-	            vertical-align: middle;
+                height: 100%;
+                width: auto;
+                object-fit: cover;
                 z-index: 0;
             }
             
