@@ -401,12 +401,10 @@ function showcurrentpage(isnext) {
         everyvideocounting = 0;
         everyvideo.forEach(vid => {
             vid.addEventListener('seeked', () => {
-
-                video_mouseover_playing_video_seeking = false;
-
+                
                 if(video_mouseover_playing_video_playing)
                 {
-                    eachvideo_getnextthumbnail();
+                    eachvideo_interval_playing_next_ready = true;
                     return;
                 }
                 
@@ -441,42 +439,54 @@ function showcurrentpage(isnext) {
     }
 }
 
-function eachvideo_getnextthumbnail() {
-    if(!video_mouseover_playing_video_seeking) {
-        if(video_mouseover_playing_video.currentTime + thumbnailinterval > video_mouseover_playing_video.duration) {
-            video_mouseover_playing_video.currentTime = 0.0;
-        }
-        else {
-            video_mouseover_playing_video.currentTime += thumbnailinterval;
-        }
+let eachvideo_interval_playing_next_ready = false;
+let eachvideo_interval_playing_handler = null;
+let step_count=0;
+function eachvideo_interval_playing_handler_elapsed() {
 
-        video_mouseover_playing_video_seeking = true;
+    step_count++;
+    if(step_count >= 3)
+    {
+        if(eachvideo_interval_playing_next_ready) {
+            eachvideo_interval_playing_next_ready = false;
+            if(video_mouseover_playing_video.currentTime + thumbnailinterval > video_mouseover_playing_video.duration) {
+                video_mouseover_playing_video.currentTime = 0.0;
+            }
+            else {
+                video_mouseover_playing_video.currentTime += thumbnailinterval;
+            }
+            
+            step_count = 0;
+        }
     }
-    else {
-        console.error("video_mouseover_playing_video_seeking");
-    }
+
+
 }
 
 function eachvideo_mouseenter(p) {
     if(every_input_disable) return;
 
     video_mouseover_playing_video = p.target;
-    if(video_mouseover_staying_check_timer != null)
-        clearTimeout(video_mouseover_staying_check_timer);
+    if(video_mouseover_staying_check_timer != null) clearTimeout(video_mouseover_staying_check_timer);
 
     video_mouseover_staying_check_timer = setTimeout(() => {
         // console.log(`play !!! - ${video_mouseover_playing_video.src}`);
         video_mouseover_playing_video_playing = true;
-        eachvideo_getnextthumbnail();
+
+        eachvideo_interval_playing_next_ready = true;
+        eachvideo_interval_playing_handler = setInterval(eachvideo_interval_playing_handler_elapsed, 100);
 
     }, 1000);
 }
 
-
-
 function eachvideo_mouseleave(p) {
     if(video_mouseover_staying_check_timer != null)
         clearTimeout(video_mouseover_staying_check_timer);
+    video_mouseover_staying_check_timer = null;
+    
+    if(eachvideo_interval_playing_handler != null)
+        clearTimeout(eachvideo_interval_playing_handler);
+    eachvideo_interval_playing_handler = null;
 
     if(video_mouseover_playing_video_playing) {
         // console.log(`stopping - ${video_mouseover_playing_video.src}`);
@@ -489,7 +499,6 @@ function eachvideo_mouseleave(p) {
 let video_mouseover_playing_video = null;
 let video_mouseover_staying_check_timer = null;
 let video_mouseover_playing_video_playing = false;
-let video_mouseover_playing_video_seeking = false;
 
 let everyvideo;
 let everyvideocounting = 0;
