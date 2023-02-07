@@ -256,6 +256,7 @@
                         leftmousedowned = true;
                         leftmouse_movestarted = true;
                         leftmousedownpos = param.x;
+                        seeking_labelsetting_handler = setInterval(seeking_labelsetting_handler_elapsed, 100);
                         break;
                     
                     case 1: // middle
@@ -279,6 +280,7 @@
                         {
                             leftmousedowned = false;                        
                             if(!pastpausedstate) player.play();
+                            clearInterval(seeking_labelsetting_handler);
                         }
                         break;
                     
@@ -305,6 +307,25 @@
 
             });
 
+            let seeking_labelsetting_handler = null;
+            function seeking_labelsetting_handler_elapsed() {
+                let msg;
+
+                if(!player_seeking_available)
+                {
+                    const progress = ((startvideoposition+positionscrollcurr) / player.duration * 100).toFixed(2);
+                    const sec = Math.round(positionscrollcurr);
+                    msg = `seeking to ${progress}% (${sec}s)`;
+                }
+                else
+                {
+                    const progress = (player.currentTime / player.duration * 100).toFixed(2);
+                    const sec = Math.round(player.currentTime - startvideoposition);
+                    msg = `moved - ${progress}% (${sec}s)`;
+                }
+
+                setLabelText(msg);
+            }
             
             let player_seeking_available = false;
             player.addEventListener('seeked', () => {
@@ -315,8 +336,6 @@
             });
 
             function player_seeking() {
-                const progress = (player.currentTime / player.duration * 100).toFixed(2);
-                setLabelText(`moving - ${progress}% (${Math.round((player.currentTime - startvideoposition))}s)`);
                 player.currentTime = (startvideoposition+positionscrollcurr);
             }
 
