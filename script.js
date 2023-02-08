@@ -6,14 +6,18 @@ const url = new URL(urlStr);
 const urlParams = url.searchParams;
 const parampath = urlParams.get('p');
 const paramfind = urlParams.get('f');
+const parampage = urlParams.get('g');
 const drivelist = ["drv0", "drv1"];
 
 const input_search = document.querySelector(".input_search");
 let input_search_typing = false;
 let every_input_disable = false;
 
+let controlpanel_force_visible = false;
 function bodybackgroundcolor_default() {
     document.querySelector('.loadinglight').style.backgroundColor = 'greenyellow';
+    document.querySelector('.control').style.visibility = 'hidden';
+    controlpanel_force_visible = false;
 }
 
 function bodybackgroundcolor_busy_exiting() {
@@ -22,6 +26,8 @@ function bodybackgroundcolor_busy_exiting() {
 
 function bodybackgroundcolor_busy() {
     document.querySelector('.loadinglight').style.backgroundColor = 'red';
+    document.querySelector('.control').style.visibility = 'visible';
+    controlpanel_force_visible = true;
 }
 
 input_search.onkeypress = function(e) {
@@ -181,7 +187,8 @@ document.addEventListener("mousemove", (param) => {
         document.querySelector(".control").style.visibility="visible";
     }
     else if(!mouseareaenter && mouseareaenter_past) {
-        document.querySelector(".control").style.visibility="hidden";
+        if(!controlpanel_force_visible)
+            document.querySelector(".control").style.visibility="hidden";
     }
     mouseareaenter_past = mouseareaenter;
 });
@@ -194,13 +201,45 @@ document.getElementById("btnback").addEventListener("click", function() {
 let btnprev = document.getElementById("btnprev");
 btnprev.addEventListener("click", function() {
     if(every_input_disable) return;
-    showcurrentpage(0); // 1 to next , 0 to prev, -1 to load current pos
+
+    let page;
+    if(parampage != null)
+    {
+        page = Number(parampage);
+        if(page > 0) page--;
+    }
+    else
+    {
+        page=0;
+    }
+
+    const nextlink = `?p=${parampath}&g=${page}`;
+    console.log(nextlink);
+    location.replace(nextlink);
+
+    // showcurrentpage(0); // 1 to next , 0 to prev, -1 to load current pos
 });
 
 let btnnext = document.getElementById("btnnext");
 btnnext.addEventListener("click", function() {
     if(every_input_disable) return;
-    showcurrentpage(1); // 1 to next , 0 to prev, -1 to load current pos
+
+    let page;
+    if(parampage != null)
+    {
+        page = Number(parampage);
+        page++;
+    }
+    else
+    {
+        page=1;
+    }
+
+    const nextlink = `?p=${parampath}&g=${page}`;
+    console.log(nextlink);
+    location.replace(nextlink);
+
+    // showcurrentpage(1); // 1 to next , 0 to prev, -1 to load current pos
 });
 
 function dirseek(param) {
@@ -311,7 +350,7 @@ let dirlistshowposition=0;
 let dirlistshowposition_past=-1;
 let itemcount=0;
 
-function showcurrentpage(isnext) {
+function showcurrentpage(isnext, pageidx=-1) {
     folderslist = [];
     videoslist = [];
 
@@ -331,12 +370,23 @@ function showcurrentpage(isnext) {
     }
     else if(isnext == -1)
     {
-
+        console.log(`request page - ${pageidx}`);
     }
     else
     {
         return;
     }
+
+    let maxpageidx = Math.floor(itemcount/dirlistmaxshow);
+
+    if(pageidx != -1)
+    {
+        if(pageidx > maxpageidx) pageidx = maxpageidx;
+        dirlistshowposition = Math.floor(pageidx*dirlistmaxshow);
+    }
+    
+    btnprev.innerText = `Prev - ${Math.floor(dirlistshowposition/dirlistmaxshow)}`;
+    btnnext.innerText = `Next - ${maxpageidx - Math.floor(dirlistshowposition/dirlistmaxshow)}`;
 
     if(dirlistshowposition == dirlistshowposition_past && isnext != -1)
     {
@@ -345,8 +395,6 @@ function showcurrentpage(isnext) {
     
     dirlistshowposition_past = dirlistshowposition;
 
-    btnprev.innerText = `Prev - ${Math.floor(dirlistshowposition/dirlistmaxshow)}`;
-    btnnext.innerText = `Next - ${Math.floor(itemcount/dirlistmaxshow) - Math.floor(dirlistshowposition/dirlistmaxshow)}`;
 
     let contents = "";
     let until = dirlistshowposition + dirlistmaxshow;
@@ -446,7 +494,7 @@ let step_count=0;
 function eachvideo_interval_playing_handler_elapsed() {
 
     step_count++;
-    if(step_count >= 3)
+    if(step_count >= 5)
     {
         if(eachvideo_interval_playing_next_ready) {
             eachvideo_interval_playing_next_ready = false;
@@ -583,7 +631,18 @@ if(parampath != null)
             submitsearching(paramfind);
         }
         else {
-            showcurrentpage(-1); // 1 to next , 0 to prev , -1 to load current pos
+            let page = -1;
+
+            if(parampage != null)
+            {
+                page = Number(parampage);
+                showcurrentpage(-1, page); // 1 to next , 0 to prev , -1 to load current pos
+            }
+            else
+            {
+                showcurrentpage(-1); // 1 to next , 0 to prev , -1 to load current pos
+            }
+
         }
 
         console.info(`folderslist - ${folderslist.length}`);
