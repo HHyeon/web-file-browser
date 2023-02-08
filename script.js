@@ -43,7 +43,7 @@ function submitsearching(findingstr) {
 
     console.log(`search - ${findingstr}`);
     
-    filteredlsit = dirlist.filter(e => e.includes(findingstr));
+    filteredlsit = dirlist.filter(e => e["d"].includes(findingstr));
 
     searchingsession = true;
 
@@ -293,7 +293,7 @@ function genmp4(ididx, param) {
     videoslist.push(keyvalue);
     let html=`
     <div id=id${ididx} class="videoview" onclick="mp4clicked(this.id)">
-    <video preload="metadata" src="${param}#t=5.0"></video>
+    <video preload="metadata" src="${param}#t=30.0"></video>
     <h6>${name}</h6>
     </div>
     `;
@@ -358,12 +358,13 @@ function showcurrentpage(isnext) {
         let curr = `${parampath}`;
         if(parampath[parampath.length-1] != '/') curr += '/';
 
-        if(searchingsession) {
-            curr += `${filteredlsit[ididx]}`;
-        }
-        else {
-            curr += `${dirlist[ididx]}`;
-        }
+        let fname;
+        if(searchingsession)
+            fname = filteredlsit[ididx]["d"];
+        else
+            fname = dirlist[ididx]["d"];
+    
+        curr += `${fname}`;
 
         const dot = curr.lastIndexOf('.');
 
@@ -547,9 +548,24 @@ if(parampath != null)
         // console.info(`Successed`);
     
         dirlist = jsondata["data"];
-        // dirlist.sort();
-        dirlist.reverse();
+
+        while(true) {  
+            const find__ = dirlist.find((a) => { return a["d"][0] == '.';});
+            if(find__ == undefined) break;
+            // console.log(`ignore - ${find__["d"]}`);
+            const idx = dirlist.lastIndexOf(find__);
+            dirlist.splice(idx, 1);
+        }
+
         itemcount = dirlist.length;
+
+        for(let i=0;i<dirlist.length;i++)
+        {
+            dirlist[i]["t"] = Date.parse(dirlist[i]["t"]);
+        }
+
+        dirlist.sort((a,b) => { return b["t"] - a["t"]; });
+
         const dirname = parampath.substring(parampath.lastIndexOf('/')+1);
 
         if(paramfind != null) 

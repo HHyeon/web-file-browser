@@ -18,6 +18,9 @@ if(isset($_GET["x"]))
 {
     $path=$_GET["x"];
 
+    if(substr($path, -1) == '/')
+        $path = rtrim($path, '/');
+
     // console_log($path);
 
     $dirhandle=opendir($path);
@@ -28,14 +31,19 @@ if(isset($_GET["x"]))
         {
             if($entry == "." || $entry == "..") continue;
 
-            // console_log($entry);
-            array_push($data, $entry);
+            $timedata = array();
+            $timedata["t"] = date('Y-m-d H:i:s',filemtime($path.'/'.$entry));
+            $timedata["d"] = $entry;
+
+            array_push($data, $timedata);
         }
         
         $jsonresult["ret"]=TRUE;
     }
 
     closedir($path);
+
+
 }
 else
 {
