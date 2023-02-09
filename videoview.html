@@ -25,6 +25,7 @@
                 width: 100%;
                 height: 100%;
                 justify-content: center;
+                object-fit: contain;
             }
             
             #label1 {
@@ -149,9 +150,17 @@
                         numberpadseeking(Number(param.key));
                     break;
 
+                    case '.':
+                        if(document.querySelector('video').style.objectFit == 'contain')
+                            document.querySelector('video').style.objectFit='cover';
+                        else
+                            document.querySelector('video').style.objectFit='contain';
+                            
+                        break;
                     case ' ':
                         pauseplay();
                         break;
+                    case 'Enter':
                     case 'f':
                         {
                             if (!document.fullscreenElement) {
