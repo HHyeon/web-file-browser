@@ -377,16 +377,17 @@ function showcurrentpage(isnext, pageidx=-1) {
         return;
     }
 
-    let maxpageidx = Math.floor(itemcount/dirlistmaxshow);
+    let maxpageidx = parseInt(itemcount/dirlistmaxshow)-1;
 
     if(pageidx != -1)
     {
         if(pageidx > maxpageidx) pageidx = maxpageidx;
-        dirlistshowposition = Math.floor(pageidx*dirlistmaxshow);
+        dirlistshowposition = parseInt(pageidx*dirlistmaxshow);
     }
     
-    btnprev.innerText = `Prev - ${Math.floor(dirlistshowposition/dirlistmaxshow)}`;
-    btnnext.innerText = `Next - ${maxpageidx - Math.floor(dirlistshowposition/dirlistmaxshow)}`;
+    let currpageidx = parseInt(dirlistshowposition/dirlistmaxshow);
+    btnprev.innerText = `Prev - ${currpageidx}`;
+    btnnext.innerText = `Next - ${maxpageidx - currpageidx}`;
 
     if(dirlistshowposition == dirlistshowposition_past && isnext != -1)
     {

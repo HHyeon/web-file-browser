@@ -115,7 +115,7 @@
 
                 player.volume = volumnset;
                 
-                setLabelText(`volumn: ${Math.round(player.volume*100)}%`);
+                setLabelText(`volumn: ${parseInt(player.volume*100)}%`);
             }
 
             function numberpadseeking(num) {
@@ -314,13 +314,13 @@
                 if(!player_seeking_available)
                 {
                     const progress = ((startvideoposition+positionscrollcurr) / player.duration * 100).toFixed(2);
-                    const sec = Math.round(positionscrollcurr);
+                    const sec = parseInt(positionscrollcurr);
                     msg = `seeking to ${progress}% (${sec}s)`;
                 }
                 else
                 {
                     const progress = (player.currentTime / player.duration * 100).toFixed(2);
-                    const sec = Math.round(player.currentTime - startvideoposition);
+                    const sec = parseInt(player.currentTime - startvideoposition);
                     msg = `moved - ${progress}% (${sec}s)`;
                 }
 
@@ -352,14 +352,14 @@
 
                     let diff = param.x - leftmousedownpos;
                     if(diff > scroll_range) diff = scroll_range;
-                    diff = Math.round(diff);
+                    diff = parseInt(diff);
                     const maxpushduration = 180.0 // second
-                    let positionscroll = Math.round(diff / scroll_range * maxpushduration);
+                    let positionscroll = parseInt(diff / scroll_range * maxpushduration);
 
                     positionscroll /= min_seeking_unit;
-                    positionscroll = Math.round(positionscroll);
+                    positionscroll = parseInt(positionscroll);
                     positionscroll *= min_seeking_unit;
-                    positionscroll = Math.round(positionscroll);
+                    positionscroll = parseInt(positionscroll);
 
                     if(leftmouse_movestarted)
                     {
@@ -386,7 +386,7 @@
 
                     let diff = rightmousedownpos - param.x;
                     if(diff > scroll_range) diff = scroll_range;
-                    diff = Math.round(diff);
+                    diff = parseInt(diff);
                     const maxpushamount = 1.0;
                     
                     if(rightmouse_movestarted)
