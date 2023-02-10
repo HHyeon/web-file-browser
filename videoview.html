@@ -26,6 +26,7 @@
                 height: 100%;
                 justify-content: center;
                 object-fit: contain;
+                object-position: 50% 50%;
             }
             
             #label1 {
@@ -132,11 +133,23 @@
                 }
             }
 
+            let video_cover_horizontal_moving = 5;
+
             function onKeydown(param)
             {
                 console.log(param.key);
 
                 switch(param.key){
+                    case '[':
+                        if(video_cover_horizontal_moving > 0) video_cover_horizontal_moving--;
+                        setLabelText(`${video_cover_horizontal_moving*10}%`);
+                        document.querySelector('video').style.objectPosition=`${video_cover_horizontal_moving*10}% 50%`
+                        break;
+                    case ']':
+                        if(video_cover_horizontal_moving <= 9) video_cover_horizontal_moving++;
+                        setLabelText(`${video_cover_horizontal_moving*10}%`);
+                        document.querySelector('video').style.objectPosition=`${video_cover_horizontal_moving*10}% 50%`
+                        break;
                     case '0': 
                     case '1': 
                     case '2': 
