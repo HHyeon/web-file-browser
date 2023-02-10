@@ -213,9 +213,19 @@ btnprev.addEventListener("click", function() {
         page=0;
     }
 
-    const nextlink = `?p=${parampath}&g=${page}`;
-    console.log(nextlink);
-    location.replace(nextlink);
+    if(parseInt(dirlistshowposition/dirlistmaxshow) == 0) return;
+
+    if(ctrldown) {
+        const nextlink = `?p=${parampath}&g=${page}`;
+        console.log(nextlink);
+        window.open(nextlink, "_blank");
+    }
+    else {
+        const nextlink = `?p=${parampath}&g=${page}`;
+        console.log(nextlink);
+        location.replace(nextlink);
+    }
+    
 
     // showcurrentpage(0); // 1 to next , 0 to prev, -1 to load current pos
 });
@@ -234,10 +244,23 @@ btnnext.addEventListener("click", function() {
     {
         page=1;
     }
+    
+    if(parseInt(itemcount/dirlistmaxshow) < page)
+    {
+        return;
+    }
 
-    const nextlink = `?p=${parampath}&g=${page}`;
-    console.log(nextlink);
-    location.replace(nextlink);
+    if(ctrldown) {
+        const nextlink = `?p=${parampath}&g=${page}`;
+        console.log(nextlink);
+        window.open(nextlink, "_blank");
+    }
+    else {
+        const nextlink = `?p=${parampath}&g=${page}`;
+        console.log(nextlink);
+        location.replace(nextlink);
+    }
+
 
     // showcurrentpage(1); // 1 to next , 0 to prev, -1 to load current pos
 });
@@ -377,7 +400,7 @@ function showcurrentpage(isnext, pageidx=-1) {
         return;
     }
 
-    let maxpageidx = parseInt(itemcount/dirlistmaxshow)-1;
+    let maxpageidx = parseInt(itemcount/dirlistmaxshow);
 
     if(pageidx != -1)
     {
