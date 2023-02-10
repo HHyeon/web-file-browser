@@ -31,7 +31,6 @@
     </head>
     <body>
 
-
         <img class="imagelayer"/>
         <img class="imagelayer"/>
         <img class="imagelayer"/>
@@ -53,19 +52,62 @@
             const urlParams = url.searchParams;
             const parampath = urlParams.get('p');
             const paramname = urlParams.get('t');
-            let jsondata;
+            let iamgelayers = document.querySelectorAll('.imagelayer');
+            let filelist;
+
+            iamgelayers.forEach(element => {
+
+            });
+
+            function image_nav_next()
+            {
+
+            }
+
+            function image_nav_prev()
+            {
+
+            }
+
+            document.addEventListener("keydown", (param) => {
+                console.log(param.key)
+
+                switch(param.key)
+                {
+                    case 'ArrowLeft':
+
+                        break;
+                    case 'ArrowRight':
+
+                        break;
+                }
+            });
 
             console.log(`parampath - ${parampath}`);
             console.log(`paramname - ${paramname}`);
 
             if(parampath != null && paramname != null)
             {
-                const jsonraw=dirseek(parampath);
-                jsondata=JSON.parse(jsonraw);
-                
-            }
-            
+                const jsondata=JSON.parse(dirseek(parampath));
 
+                if(jsondata['ret'])
+                {
+                    filelist = jsondata['data'];
+
+                    for(let i=0;i<iamgelayers.length;i++)
+                    {
+                        iamgelayers[i].src = `${parampath}/${filelist[i]["d"]}`
+                    }
+                }
+                else
+                {
+                    // Fail
+                }
+            }
+            else
+            {
+
+            }
 
         </script>
 

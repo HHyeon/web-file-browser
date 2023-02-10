@@ -165,9 +165,15 @@
 
                     case '.':
                         if(document.querySelector('video').style.objectFit == 'contain')
+                        {
+                            setLabelText("Fit To Window");
                             document.querySelector('video').style.objectFit='cover';
+                        }
                         else
+                        {
+                            setLabelText("Fit To Video");
                             document.querySelector('video').style.objectFit='contain';
+                        }
                             
                         break;
                     case ' ':
