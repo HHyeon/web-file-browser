@@ -13,6 +13,17 @@ const input_search = document.querySelector(".input_search");
 let input_search_typing = false;
 let every_input_disable = false;
 
+document.addEventListener("mouseleave", () => {
+    if(!controlpanel_force_visible)
+        document.querySelector('.control').style.visibility = 'hidden';
+});
+
+document.addEventListener("mouseenter", (param) => {
+    mouseareaenter_past = false;
+    if(!controlpanel_force_visible)
+        showornotcontrolPanel(param.y);
+});
+
 let controlpanel_force_visible = false;
 function bodybackgroundcolor_default() {
     document.querySelector('.loadinglight').style.backgroundColor = 'greenyellow';
@@ -175,22 +186,26 @@ function nav_back() {
     }
 };
 
-let mouseareaenter = false;
-let mouseareaenter_past = false;
-document.addEventListener("mousemove", (param) => {
-    if(param.y < window.innerHeight / 20)
+function showornotcontrolPanel(ypos) {
+    if(ypos < window.innerHeight / 10)
         mouseareaenter = true;
     else 
         mouseareaenter = false;
 
     if(mouseareaenter && !mouseareaenter_past) {
-        document.querySelector(".control").style.visibility="visible";
+        document.querySelector('.control').style.visibility="visible";
     }
     else if(!mouseareaenter && mouseareaenter_past) {
         if(!controlpanel_force_visible)
-            document.querySelector(".control").style.visibility="hidden";
+            document.querySelector('.control').style.visibility="hidden";
     }
     mouseareaenter_past = mouseareaenter;
+}
+
+let mouseareaenter = false;
+let mouseareaenter_past = false;
+document.addEventListener("mousemove", (param) => {
+    showornotcontrolPanel(param.y);
 });
 
 document.getElementById("btnback").addEventListener("click", function() {
@@ -275,15 +290,19 @@ function dirseek(param) {
 
 function imgclicked(element) {
     if(every_input_disable) return;
-    console.log("imgclicked");
-
-    let newpage = `./imgview.html`;
-
+    const name = element.substring(element.lastIndexOf('/')+1);
+    const newpage = `./imgview.html?p=${parampath}&t=${name}`;
     window.open(newpage, "_blank");
 }
 
 function genimage(ididx, srcpath) {
-    let html=`<img id=id${ididx} class="imageitem" src="${srcpath}" loading=lazy onclick="imgclicked(this.id)"></img>`;
+    const imgname = srcpath.substring(srcpath.lastIndexOf('/')+1);
+    const html=`
+    <div class='imageview'>
+    <img id=id${ididx} src="${srcpath}" loading=lazy onclick="imgclicked(this.src)">
+    <h6>${imgname}</h6>
+    </img>
+    </div>`;
     return html;
 }
 
@@ -610,6 +629,28 @@ function videothumbnails_updating_finish() {
     }
 }
 
+
+function extractlastnumberfromfilename(str) {
+    let dotpos = str.lastIndexOf('.');
+    if(dotpos == -1) return -1;
+    let src1 = str.substring(0, dotpos);
+
+    let cut=-1;
+    for(let i=src1.length-1;i>=0;i--)
+    {
+        if(!(src1[i] >= '0' && src1[i] <= '9'))
+        {
+            cut = i+1;
+            break;
+        }
+    }
+
+    if(cut == -1) return -1;
+    let res = src1.substring(cut);
+
+    return Number(res);
+}
+
 if(parampath != null)
 {
     const jsonraw=dirseek(parampath);
@@ -636,7 +677,29 @@ if(parampath != null)
             dirlist[i]["t"] = Date.parse(dirlist[i]["t"]);
         }
 
-        dirlist.sort((a,b) => { return b["t"] - a["t"]; });
+
+        var imgfileslist = dirlist.filter(x => x["d"].substring(x["d"].lastIndexOf('.')+1) == 'jpeg');
+        
+        if(imgfileslist.length == 0)
+        {
+            console.log("Sort by Time !!!!");
+            dirlist.sort((a,b) => { return b["t"] - a["t"]; });
+        }
+        else
+        {
+            if(imgfileslist.length / dirlist.length > 0.5) // check the Ratio of Image File and another File
+            {
+                console.log("Sort by Name !!!!");
+                dirlist.sort((a,b) => {
+                    return extractlastnumberfromfilename(a["d"]) - extractlastnumberfromfilename(b["d"]);
+                });
+            }
+            else
+            {
+                console.log("Sort by Time !!!!");
+                dirlist.sort((a,b) => { return b["t"] - a["t"]; });
+            }
+        }
 
         const dirname = parampath.substring(parampath.lastIndexOf('/')+1);
 

@@ -4,17 +4,71 @@
         <title>imgviewer</title>
 
         <style>
-            html {
+            * {
                 margin: 0px;
             }
+
             body {
                 background-color: rgb(25, 25, 25);
                 color: aliceblue;
-                margin: 0px;
+                overflow-y: hidden; /* Hide vertical scrollbar */
+                overflow-x: hidden; /* Hide horizontal scrollbar */
+                text-align: center;
             }
+
+            .imagelayer {
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                justify-content: center;
+                object-fit: contain;
+                visibility: hidden;
+            }
+
         </style>
     </head>
     <body>
+
+
+        <img class="imagelayer"/>
+        <img class="imagelayer"/>
+        <img class="imagelayer"/>
+        <img class="imagelayer"/>
+        <img class="imagelayer"/>
+
+        <script>
+
+            function dirseek(param) {
+                let xmlhttp = new XMLHttpRequest();
+                let url=`dirseek.php?x=${param}`;
+                xmlhttp.open("GET", url, false);
+                xmlhttp.send(null);
+                return xmlhttp.responseText;
+            };
+
+            const urlStr = window.location.href;
+            const url = new URL(urlStr);
+            const urlParams = url.searchParams;
+            const parampath = urlParams.get('p');
+            const paramname = urlParams.get('t');
+            let jsondata;
+
+            console.log(`parampath - ${parampath}`);
+            console.log(`paramname - ${paramname}`);
+
+            if(parampath != null && paramname != null)
+            {
+                const jsonraw=dirseek(parampath);
+                jsondata=JSON.parse(jsonraw);
+                
+            }
+            
+
+
+        </script>
+
 
     </body>
 </html>
