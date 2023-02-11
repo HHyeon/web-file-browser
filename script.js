@@ -635,12 +635,12 @@ function extractlastnumberfromfilename(str) {
     if(dotpos == -1) return -1;
     let src1 = str.substring(0, dotpos);
 
-    if(Number(src1) == NaN)
+    if(isNaN(src1))
     {
         let cut=-1;
         for(let i=src1.length-1;i>=0;i--)
         {
-            if(!(src1[i] >= '0' && src1[i] <= '9'))
+            if(isNaN(src1[i]))
             {
                 cut = i+1;
                 break;
@@ -653,6 +653,7 @@ function extractlastnumberfromfilename(str) {
     }
     else 
     {
+        console.log(`Number`);
         return Number(src1);
     }   
 
