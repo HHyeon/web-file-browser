@@ -18,13 +18,13 @@
 
             .imageview {
                 position:relative;
-                width: 98%;
-                height: 98%;
+                width: 100%;
+                height: 100%;
             }
 
             .imageview img {
                 object-fit: contain;
-                object-position: center;
+                object-position: 50% 50%;
                 width: 100%;
                 height: 100%;
             }
@@ -41,31 +41,53 @@
                 width: 100%;
                 height: 100%;
                 
-                height: fit-content;
+                /* height: fit-content;
                 display: grid;
                 grid-auto-rows: 1fr;
                 grid-template-columns: repeat(5, 20%);
-                grid-template-rows: 1fr;
+                grid-template-rows: 1fr; */
+            }
+
+            
+            .label1 {
+                position:fixed;
+                left: 2%;
+                top: 2%;
+                background-color: rgba(0, 0, 0, 0.2);
             }
 
         </style>
     </head>
     <body>
 
-    <div class="grid_temp"></div>
+
+    <div class="grid_temp">
+        <div class="imageview">
+            <img></img>
+            <h6></h6>
+        </div>
+    </div>
+
+    <h1 class="label1"></h1>
 
     <script>
+        
+        const label1 = document.querySelector(".label1");
+        let delayedoffTimer = undefined;
+        
+        function setLabelText(msg) {
+            if(delayedoffTimer != undefined) clearTimeout(delayedoffTimer);
+            
+            label1.innerText = msg;
+            label1.style.visibility="visible";
+            
+            delayedoffTimer = setTimeout(() => {
+                label1.style.visibility="hidden";
+                delayedoffTimer = undefined;
+            },1000);
 
-        const img_object_count = 5;
-
-        for(let i=0;i<img_object_count;i++) {
-            document.querySelector('.grid_temp').innerHTML += `
-            <div class="imageview">
-                <img></img>
-                <h6></h6>
-            </div>
-            `;
         }
+        
 
         function dirseek(param) {
             let xmlhttp = new XMLHttpRequest();
@@ -80,12 +102,12 @@
             if(dotpos == -1) return -1;
             let src1 = str.substring(0, dotpos);
 
-            if(Number(src1) == NaN)
+            if(isNaN(src1))
             {
                 let cut=-1;
                 for(let i=src1.length-1;i>=0;i--)
                 {
-                    if(!(src1[i] >= '0' && src1[i] <= '9'))
+                    if(isNaN(src1[i]))
                     {
                         cut = i+1;
                         break;
@@ -98,6 +120,7 @@
             }
             else 
             {
+                console.log(`Number`);
                 return Number(src1);
             }   
 
@@ -108,68 +131,25 @@
         const urlParams = url.searchParams;
         const parampath = urlParams.get('p');
         const paramname = urlParams.get('t');
-        let imagelayers = document.querySelectorAll('.imageview');
+        let imagelayers = document.querySelector('.imageview');
+        let filelist_index=0;
         let filelist;
-        let filelist_index_tail = 10;
-        let filelist_index_head = 5;
-
-        imagelayers.forEach(element => {
-
-        });
-
-        let image_index_field = [];
-
-        let showingimageindex = Number(filelist_index_tail/filelist_index_head);
-        let showingimageindex_past = showingimageindex;
+        let image_top = document.querySelector('img');
+        
         function image_nav_next()
         {
-            if(filelist_index_tail == filelist.length) return;
+            if(filelist_index < filelist.length-2) filelist_index++;
 
-            imagelayers[showingimageindex_past].style.border = '';
-            // imagelayers[showingimageindex_past].style.display = 'none';
-
-            // replace minimum index of image
-            let replace_image_index = image_index_field.indexOf(Math.min(...image_index_field));
-            imagelayers[replace_image_index].children[0].src = `${parampath}/${filelist[filelist_index_tail]["d"]}`;
-            imagelayers[replace_image_index].children[1].innerText = filelist[filelist_index_tail]["d"];
-            image_index_field[replace_image_index] = filelist_index_tail;
-            filelist_index_head++;
-            filelist_index_tail++;
-
-            // console.log(`image_index_field - ${image_index_field}`);
-            // console.log(`filelist_index_head - ${filelist_index_head} , filelist_index_tail - ${filelist_index_tail}`);
-            
-            showingimageindex++;
-            if(showingimageindex >= img_object_count) showingimageindex = 0;
-            imagelayers[showingimageindex].style.border = 'solid lightgray';
-            // imagelayers[showingimageindex].style.display = '';
-            showingimageindex_past = showingimageindex;
+            imagelayers.children[0].src = `${parampath}/${filelist[filelist_index]["d"]}`;
+            imagelayers.children[1].innerText = filelist[filelist_index]["d"];
         }
 
         function image_nav_prev()
         {
-            if(filelist_index_head == 0) return;
+            if(filelist_index > 0) filelist_index--;
 
-            imagelayers[showingimageindex_past].style.border = '';
-            // imagelayers[showingimageindex_past].style.display = 'none';
-            
-            filelist_index_head--;
-            filelist_index_tail--;
-
-            // replace minimum index of image
-            let replace_image_index = image_index_field.indexOf(Math.max(...image_index_field));
-            imagelayers[replace_image_index].children[0].src = `${parampath}/${filelist[filelist_index_head]["d"]}`;
-            imagelayers[replace_image_index].children[1].innerText = filelist[filelist_index_head]["d"];
-            image_index_field[replace_image_index] = filelist_index_head;
-
-            // console.log(`image_index_field - ${image_index_field}`);
-            // console.log(`filelist_index_head - ${filelist_index_head} , filelist_index_tail - ${filelist_index_tail}`);
-            
-            showingimageindex--;
-            if(showingimageindex == -1) showingimageindex = img_object_count-1;
-            imagelayers[showingimageindex].style.border = 'solid lightgray';
-            // imagelayers[showingimageindex].style.display = '';
-            showingimageindex_past = showingimageindex;
+            imagelayers.children[0].src = `${parampath}/${filelist[filelist_index]["d"]}`;
+            imagelayers.children[1].innerText = filelist[filelist_index]["d"];
         }
 
         document.addEventListener("keydown", (param) => {
@@ -180,10 +160,79 @@
                 case 'ArrowLeft':
                     image_nav_prev();
                     break;
+                case ' ':
                 case 'ArrowRight':
                     image_nav_next();
                     break;
+
+                case '.':
+                    if(image_top.style.objectFit == 'contain')
+                    {
+                        setLabelText("Fit To Window");
+                        image_top.style.objectFit='cover';
+                    }
+                    else
+                    {
+                        setLabelText("Fit To Video");
+                        image_top.style.objectFit='contain';
+                    }
+
+                    break;
+                case 'f':
+                case 'Enter':
+                    {
+                        if (!document.fullscreenElement) {
+                            document.documentElement.requestFullscreen()
+                        } else {
+                            if (document.exitFullscreen)
+                                document.exitFullscreen()
+                        }
+                    }
+                    break;
             }
+        });
+
+        let img_width = -1;
+        let img_height = -1;
+        image_top.addEventListener("load", () => {
+            img_width = image_top.naturalWidth;
+            img_height = image_top.naturalHeight;
+            // image_top.style.objectPosition = `-${img_width/4}px -${img_height/4}px`;
+            console.log(`${img_width}, ${img_height}`);
+        });
+
+        let mousebuttondowned = false;
+
+        document.addEventListener("mousedown", (param) => {
+            if(event.preventDefault)
+                event.preventDefault();
+            else
+                event.returnValue = false;
+
+            if(param.button == 0)
+            {
+                console.log("mousedown");
+                mousebuttondowned = true;
+            }
+        });
+        
+        document.addEventListener("mouseup", (param) => {
+            
+            if(param.button == 0)
+            {
+                console.log("mouseup");
+                mousebuttondowned = false;
+            }
+
+        });
+        
+        document.addEventListener("mousemove", (param) => {
+            
+            if(mousebuttondowned)
+            {
+                console.log("mousemove");
+            }
+
         });
 
         console.log(`parampath - ${parampath}`);
@@ -200,19 +249,12 @@
                 filelist.sort((a,b) => {
                     return extractlastnumberfromfilename(a["d"]) - extractlastnumberfromfilename(b["d"]);
                 });
-                
-                for(let i=0;i<imagelayers.length;i++)
-                {
-                    imagelayers[i].children[0].src = `${parampath}/${filelist[filelist_index_head+i]["d"]}`;
-                    imagelayers[i].children[1].innerText = filelist[filelist_index_head+i]["d"];
-                    // imagelayers[i].style.display = 'none';
-                    imagelayers[i].style.zIndex = 0;
-                    image_index_field.push(filelist_index_head+i);
-                }
 
-                imagelayers[showingimageindex].style.border = 'solid lightgray';
-                // imagelayers[showingimageindex].style.display = '';
-                imagelayers[showingimageindex].style.zIndex = 1;
+                filelist_index = filelist.indexOf(filelist.find(a => a["d"] == paramname));
+
+                imagelayers.children[0].src = `${parampath}/${filelist[filelist_index]["d"]}`;
+                imagelayers.children[1].innerText = filelist[filelist_index]["d"];
+                
             }
             else
             {

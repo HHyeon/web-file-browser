@@ -299,7 +299,7 @@ function genimage(ididx, srcpath) {
     const imgname = srcpath.substring(srcpath.lastIndexOf('/')+1);
     const html=`
     <div class='imageview'>
-    <img id=id${ididx} src="${srcpath}" loading=lazy onclick="imgclicked(this.src)">
+    <img id=id${ididx} src="${srcpath}" loading=eager onclick="imgclicked(this.src)">
     <h6>${imgname}</h6>
     </img>
     </div>`;
