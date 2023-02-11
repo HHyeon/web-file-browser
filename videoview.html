@@ -133,7 +133,7 @@
                 }
             }
 
-            let video_cover_horizontal_moving = 5;
+            let video_cover_horizontal_moving = 10;
 
             function onKeydown(param)
             {
@@ -142,13 +142,13 @@
                 switch(param.key){
                     case '[':
                         if(video_cover_horizontal_moving > 0) video_cover_horizontal_moving--;
-                        setLabelText(`${video_cover_horizontal_moving*10}%`);
-                        document.querySelector('video').style.objectPosition=`${video_cover_horizontal_moving*10}% 50%`
+                        setLabelText(`${video_cover_horizontal_moving*5}%`);
+                        document.querySelector('video').style.objectPosition=`${video_cover_horizontal_moving*5}% 50%`
                         break;
                     case ']':
-                        if(video_cover_horizontal_moving <= 9) video_cover_horizontal_moving++;
-                        setLabelText(`${video_cover_horizontal_moving*10}%`);
-                        document.querySelector('video').style.objectPosition=`${video_cover_horizontal_moving*10}% 50%`
+                        if(video_cover_horizontal_moving <= 19) video_cover_horizontal_moving++;
+                        setLabelText(`${video_cover_horizontal_moving*5}%`);
+                        document.querySelector('video').style.objectPosition=`${video_cover_horizontal_moving*5}% 50%`
                         break;
                     case '0': 
                     case '1': 
