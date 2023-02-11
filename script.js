@@ -635,20 +635,27 @@ function extractlastnumberfromfilename(str) {
     if(dotpos == -1) return -1;
     let src1 = str.substring(0, dotpos);
 
-    let cut=-1;
-    for(let i=src1.length-1;i>=0;i--)
+    if(Number(src1) == NaN)
     {
-        if(!(src1[i] >= '0' && src1[i] <= '9'))
+        let cut=-1;
+        for(let i=src1.length-1;i>=0;i--)
         {
-            cut = i+1;
-            break;
+            if(!(src1[i] >= '0' && src1[i] <= '9'))
+            {
+                cut = i+1;
+                break;
+            }
         }
+    
+        if(cut == -1) return -1;
+        let res = src1.substring(cut);
+        return Number(res);
     }
+    else 
+    {
+        return Number(src1);
+    }   
 
-    if(cut == -1) return -1;
-    let res = src1.substring(cut);
-
-    return Number(res);
 }
 
 if(parampath != null)
@@ -678,7 +685,9 @@ if(parampath != null)
         }
 
 
-        var imgfileslist = dirlist.filter(x => x["d"].substring(x["d"].lastIndexOf('.')+1) == 'jpeg');
+        var imgfileslist = dirlist.filter(x => 
+            x["d"].substring(x["d"].lastIndexOf('.')+1) == 'jpeg' || 
+            x["d"].substring(x["d"].lastIndexOf('.')+1) == 'jpg'  );
         
         if(imgfileslist.length == 0)
         {
