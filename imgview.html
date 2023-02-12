@@ -24,7 +24,6 @@
 
             .imageview img {
                 object-fit: contain;
-                object-position: 50% 50%;
                 width: 100%;
                 height: 100%;
             }
@@ -120,7 +119,6 @@
             }
             else 
             {
-                console.log(`Number`);
                 return Number(src1);
             }   
 
@@ -135,6 +133,10 @@
         let filelist_index=0;
         let filelist;
         let image_top = document.querySelector('img');
+        let image_top_postition_x_diff;
+        let image_top_postition_y_diff;
+        let image_top_postition_x = 0;
+        let image_top_postition_y = 0;
         
         function image_nav_next()
         {
@@ -152,6 +154,29 @@
             imagelayers.children[1].innerText = filelist[filelist_index]["d"];
         }
 
+
+        let pixelFitzoom_toggle = false;
+
+        function pixelFitZoom()
+        {
+            image_top.style.width = '3840px';
+            image_top.style.objectFit = 'cover';
+            image_top.style.objectPosition = `
+            ${parseInt(image_top.style.width)/2-window.innerWidth/2}px
+            ${parseInt(image_top.style.height)/2-window.innerHeight/2}px
+            `;
+        }
+
+        function ZoomRelease()
+        {
+            image_top.style.width = '100%';
+            image_top.style.objectFit = 'contain';
+            image_top_postition_x = 0;
+            image_top_postition_y = 0;
+            image_top.style.objectPosition = `${image_top_postition_x}px ${image_top_postition_y}px`;
+        }
+        
+
         document.addEventListener("keydown", (param) => {
             console.log(param.key)
 
@@ -166,42 +191,43 @@
                     break;
 
                 case '.':
-                    if(image_top.style.objectFit == 'contain')
-                    {
-                        setLabelText("Fit To Window");
-                        image_top.style.objectFit='cover';
-                    }
+            
+                    pixelFitzoom_toggle = !pixelFitzoom_toggle;
+
+                    if(pixelFitzoom_toggle)
+                        pixelFitZoom();
                     else
-                    {
-                        setLabelText("Fit To Video");
-                        image_top.style.objectFit='contain';
-                    }
+                        ZoomRelease();
 
                     break;
                 case 'f':
                 case 'Enter':
                     {
                         if (!document.fullscreenElement) {
-                            document.documentElement.requestFullscreen()
+                            document.documentElement.requestFullscreen();
                         } else {
                             if (document.exitFullscreen)
-                                document.exitFullscreen()
+                                document.exitFullscreen();
                         }
                     }
                     break;
             }
         });
-
-        let img_width = -1;
-        let img_height = -1;
+        
         image_top.addEventListener("load", () => {
-            img_width = image_top.naturalWidth;
-            img_height = image_top.naturalHeight;
-            // image_top.style.objectPosition = `-${img_width/4}px -${img_height/4}px`;
-            console.log(`${img_width}, ${img_height}`);
+            console.log(`load - ${image_top.naturalWidth}px ${image_top.naturalHeight}px`);
+            pixelFitzoom_toggle = false;
+            ZoomRelease();
         });
 
         let mousebuttondowned = false;
+        let start_xpos=0;
+        let start_ypos=0;
+        let diff_xpos=0;
+        let diff_ypos=0;
+
+        let image_top_move_start_x;
+        let image_top_move_start_y;
 
         document.addEventListener("mousedown", (param) => {
             if(event.preventDefault)
@@ -211,8 +237,9 @@
 
             if(param.button == 0)
             {
-                console.log("mousedown");
                 mousebuttondowned = true;
+                start_xpos = param.x;
+                start_ypos = param.y;
             }
         });
         
@@ -220,8 +247,17 @@
             
             if(param.button == 0)
             {
-                console.log("mouseup");
                 mousebuttondowned = false;
+
+                let resposx = image_top_postition_x+image_top_postition_x_diff;
+                let resposy = image_top_postition_y+image_top_postition_y_diff;
+                // if(resposx > 100) resposx = 100;
+                // if(resposx < 0) resposx = 0;
+                // if(resposy > 100) resposy = 100;
+                // if(resposy < 0) resposy = 0;
+                image_top_postition_x = resposx;
+                image_top_postition_y = resposy;
+
             }
 
         });
@@ -230,7 +266,24 @@
             
             if(mousebuttondowned)
             {
-                console.log("mousemove");
+                const diff_max = 1000;
+
+                diff_xpos = param.x - start_xpos;
+                if(diff_xpos > diff_max) diff_xpos = diff_max;
+                diff_ypos = param.y - start_ypos;
+                if(diff_ypos > diff_max) diff_ypos = diff_max;
+
+                diff_xpos /= diff_max;
+                diff_ypos /= diff_max;
+
+                image_top_postition_x_diff = (diff_xpos*diff_max);
+                image_top_postition_y_diff = (diff_ypos*diff_max);
+
+
+                let resposx = image_top_postition_x+image_top_postition_x_diff;
+                let resposy = image_top_postition_y+image_top_postition_y_diff;
+                console.log(`${resposx}px ${resposy}px`);
+                image_top.style.objectPosition = `${resposx}px ${resposy}px`;
             }
 
         });
