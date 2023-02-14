@@ -60,7 +60,7 @@ function submitsearching(findingstr) {
 
     console.log(`search - ${findingstr}`);
     
-    filteredlsit = dirlist.filter(e => e["d"].includes(findingstr));
+    filteredlsit = dirlist.filter(e => e["d"].toUpperCase().includes(findingstr.toUpperCase()));
 
     searchingsession = true;
 
@@ -230,15 +230,22 @@ btnprev.addEventListener("click", function() {
 
     if(parseInt(dirlistshowposition/dirlistmaxshow) == 0) return;
 
-    if(ctrldown) {
-        const nextlink = `?p=${parampath}&g=${page}`;
-        console.log(nextlink);
-        window.open(nextlink, "_blank");
+    if(searchingsession)
+    {
+        showcurrentpage(0);
     }
-    else {
-        const nextlink = `?p=${parampath}&g=${page}`;
-        console.log(nextlink);
-        location.replace(nextlink);
+    else
+    {
+        if(ctrldown) {
+            const nextlink = `?p=${parampath}&g=${page}`;
+            console.log(nextlink);
+            window.open(nextlink, "_blank");
+        }
+        else {
+            const nextlink = `?p=${parampath}&g=${page}`;
+            console.log(nextlink);
+            location.replace(nextlink);
+        }
     }
     
 
@@ -265,15 +272,22 @@ btnnext.addEventListener("click", function() {
         return;
     }
 
-    if(ctrldown) {
-        const nextlink = `?p=${parampath}&g=${page}`;
-        console.log(nextlink);
-        window.open(nextlink, "_blank");
+    if(searchingsession)
+    {
+        showcurrentpage(1);
     }
-    else {
-        const nextlink = `?p=${parampath}&g=${page}`;
-        console.log(nextlink);
-        location.replace(nextlink);
+    else
+    {
+        if(ctrldown) {
+            const nextlink = `?p=${parampath}&g=${page}`;
+            console.log(nextlink);
+            window.open(nextlink, "_blank");
+        }
+        else {
+            const nextlink = `?p=${parampath}&g=${page}`;
+            console.log(nextlink);
+            location.replace(nextlink);
+        }
     }
 
 
