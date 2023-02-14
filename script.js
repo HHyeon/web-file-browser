@@ -16,12 +16,18 @@ let every_input_disable = false;
 document.addEventListener("mouseleave", () => {
     if(!controlpanel_force_visible)
         document.querySelector('.control').style.visibility = 'hidden';
+        
+    ctrldown = false;
+    console.log(`ctrldown - ${ctrldown}`);
 });
 
 document.addEventListener("mouseenter", (param) => {
     mouseareaenter_past = false;
     if(!controlpanel_force_visible)
         showornotcontrolPanel(param.y);
+        
+    ctrldown = false;
+    console.log(`ctrldown - ${ctrldown}`);
 });
 
 let controlpanel_force_visible = false;
@@ -94,6 +100,7 @@ document.addEventListener("keydown", function(e) {
     
     if(e.key == "Control") {
         ctrldown = true;
+        console.log(`ctrldown - ${ctrldown}`);
     }
     else if(e.key == 'Escape') {
         
@@ -146,6 +153,7 @@ document.addEventListener("keyup", function(e) {
     if(every_input_disable) return;
     if(e.key == "Control") {
         ctrldown = false;
+        console.log(`ctrldown - ${ctrldown}`);
     }
 });
 
