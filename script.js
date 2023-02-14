@@ -25,7 +25,7 @@ document.addEventListener("mouseenter", (param) => {
     mouseareaenter_past = false;
     if(!controlpanel_force_visible)
         showornotcontrolPanel(param.y);
-        
+
     ctrldown = false;
     console.log(`ctrldown - ${ctrldown}`);
 });
@@ -238,6 +238,15 @@ btnprev.addEventListener("click", function() {
 
     if(parseInt(dirlistshowposition/dirlistmaxshow) == 0) return;
 
+    if(parampage == null)
+    {
+        if(page == 0) return;
+    }
+    else
+    {
+        if(parseInt(parampage) == page) return;
+    }
+
     if(searchingsession)
     {
         showcurrentpage(0);
@@ -275,7 +284,7 @@ btnnext.addEventListener("click", function() {
         page=1;
     }
     
-    if(parseInt(itemcount/dirlistmaxshow) < page)
+    if(parseInt((itemcount-1)/dirlistmaxshow) < page)
     {
         return;
     }
@@ -441,7 +450,7 @@ function showcurrentpage(isnext, pageidx=-1) {
         return;
     }
 
-    let maxpageidx = parseInt(itemcount/dirlistmaxshow);
+    let maxpageidx = parseInt((itemcount-1)/dirlistmaxshow);
 
     if(pageidx != -1)
     {
