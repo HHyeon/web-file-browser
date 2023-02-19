@@ -1,4 +1,5 @@
 
+const video_default_initial_seeking = 30.0;
 const thumbnailinterval = 30.0;
 
 const urlStr = window.location.href;
@@ -402,22 +403,56 @@ function mp4clicked(element) {
     window.open(newpage, "_blank");
 }
 
-function genmp4(ididx, param) {
+let thumbnailed_video_list = [];
+
+async function genmp4(ididx, param) {
     let name = param.substring(param.lastIndexOf('/')+1);
-    let keyvalue = {
+    
+    videoslist.push({
         id: ididx,
         data: param
-    };
-    videoslist.push(keyvalue);
-    let html=`
-    <div id=id${ididx} class="videoview" onclick="mp4clicked(this.id)">
-    <video preload="metadata" src="${param}"></video>
-    <h6>${name}</h6>
-    </div>
-    `;
-    return html;
-}
+    });
 
+    const get_result = await indexedDB_get(name);
+    
+    return new Promise((resolve) => {
+        let imagedthumbnail;
+
+        if(get_result == undefined) {
+            let html=`
+            <div id=id${ididx} class="videoview" onclick="mp4clicked(this.id)">
+            <img hidden></img>
+            <video buffered src="${param}"></video>
+            <h6>${name}</h6>
+            </div>
+            `;
+            resolve(html);
+            imagedthumbnail = false;
+        }
+        else
+        {
+            let html=`
+            <div id=id${ididx} class="videoview" onclick="mp4clicked(this.id)">
+            <img src=${get_result['filedata']}></img>
+            <video hidden buffered src="${param}"></video>
+            <h6>${name}</h6>
+            </div>
+            `;
+            resolve(html);
+            imagedthumbnail = true;
+        }
+
+        thumbnailed_video_list.push(
+            {
+                ididx: ididx,
+                imagedthumbnail: imagedthumbnail,
+                filename: name
+            }
+        );
+
+    });
+    
+}
 
 let FilesPanel = document.getElementById("FilesPanel");
 let title = document.getElementById("title");
@@ -429,9 +464,10 @@ let dirlistshowposition=0;
 let dirlistshowposition_past=-1;
 let itemcount=0;
 
-function showcurrentpage(isnext, pageidx=-1) {
+async function showcurrentpage(isnext, pageidx=-1) {
     folderslist = [];
     videoslist = [];
+    thumbnailed_video_list = [];
 
     if(isnext == 1)
     {
@@ -508,7 +544,7 @@ function showcurrentpage(isnext, pageidx=-1) {
 
             if(fileext == "mp4")
             {
-                contents += genmp4(ididx, curr);
+                contents += await genmp4(ididx, curr);
             }
             else if(fileext == "jpg" || fileext == "jpeg") {
                 contents += genimage(ididx, curr);
@@ -522,34 +558,64 @@ function showcurrentpage(isnext, pageidx=-1) {
 
     FilesPanel.innerHTML=contents;
 
-    everyvideo = document.querySelectorAll('video');
-    if(everyvideo.length > 0) {
-        bodybackgroundcolor_busy();
-        every_input_disable = true;
-        videothumbnails_updating_readynext = false;
-        everyvideocounting = 0;
 
-        everyvideo.forEach(vid => {
-            vid.addEventListener('seeked', video_onseeked_event);
-            vid.addEventListener("mouseenter", eachvideo_mouseenter);
-            vid.addEventListener("mouseleave", eachvideo_mouseleave);
-        })
+    thumbnailed_video_list.forEach((each) => {
+        if(each['imagedthumbnail']) {
 
-        everyvideo.forEach(vid => {
-            vid.currentTime = 30.0;
-        });
+        }
+        else {
+            console.log(`not cached - ${each['filename']}`);
+            const videoviews = document.querySelectorAll('.videoview');
 
-    }
+            videoviews.forEach((videoview) => {
+                if(videoview.children[1].src.endsWith(each['filename'])) {
+                    console.log(`default seek - ${each['filename']}`);
+                    videoview.children[0].style.visibility = 'hidden' // make img Element hidden
+                    videoview.children[1].style.visibility = '' // make video Element visible
+                    videoview.children[1].currentTime = video_default_initial_seeking;
+                }
+            });
+            
+        }
+    });
+    
+/*
+TODO Here !!!!!!!!!!!!!! 
+캐시된 파일은 캐시 데이터 띄우고 캐시 없는 파일은 비디오 currentTime 값 넣도록 작업함
+
+캐시 없는 파일은 비디오 currentTime 값 넣은 video Element 들은 seeked 콜백 등록해서
+videothumbnails_updating Ended 도달 되도록 작업 필요
+
+그다음에 thumbnail updating 기능 진행
+
+*/
+    
+
+    // everyvideo = document.querySelectorAll('video');
+    // if(everyvideo.length > 0) {
+    //     bodybackgroundcolor_busy();
+    //     every_input_disable = true;
+    //     videothumbnails_updating_readynext = false;
+    //     everyvideocounting = 0;
+
+    //     everyvideo.forEach(vid => {
+    //         vid.addEventListener('seeked', video_onseeked_event);
+    //         vid.addEventListener("mouseenter", eachvideo_mouseenter);
+    //         vid.addEventListener("mouseleave", eachvideo_mouseleave);
+    //     })
+    // }
+
 }
 
 function video_onseeked_event(video) {
     let name = video.target.src;
     name = name.substring(name.lastIndexOf('/')+1);
 
-    indexedDB_addvalue(name, video_to_image_base64(video.target), video.target.currentTime, () => {
+    const imagedatabase64 = video_to_image_base64(video.target);
+
+    indexedDB_addvalue(name, imagedatabase64, video.target.currentTime, () => {
         console.log(`cached - ${name}`);
     });
-    
 
     if(video_mouseover_playing_video_playing)
     {
@@ -557,23 +623,23 @@ function video_onseeked_event(video) {
         return;
     }
     
-    everyvideocounting++;
-    if(everyvideocounting == everyvideo.length) {
-        console.log("videos loading done !!!");
+    // everyvideocounting++;
+    // if(everyvideocounting == everyvideo.length) {
+    //     console.log("videos loading done !!!");
 
-        everyvideocounting = 0;
-        videothumbnails_updating_readynext = true;
+    //     everyvideocounting = 0;
+    //     videothumbnails_updating_readynext = true;
         
-        if(videothumbnails_updating) {
-            console.log("update next !!!");
-            update_next_everyvideothumbnail();
-        }
-        else {
-            console.log("videothumbnails_updating Ended");
-            bodybackgroundcolor_default();
-            every_input_disable = false;
-        }
-    }
+    //     if(videothumbnails_updating) {
+    //         console.log("update next !!!");
+    //         update_next_everyvideothumbnail();
+    //     }
+    //     else {
+    //         console.log("videothumbnails_updating Ended");
+    //         bodybackgroundcolor_default();
+    //         every_input_disable = false;
+    //     }
+    // }
 
 }
 
@@ -636,20 +702,21 @@ let video_mouseover_playing_video = null;
 let video_mouseover_staying_check_timer = null;
 let video_mouseover_playing_video_playing = false;
 
-let everyvideo;
-let everyvideocounting = 0;
+// let everyvideo;
+// let everyvideocounting = 0;
 
 function update_next_everyvideothumbnail() {
     bodybackgroundcolor_busy();
     every_input_disable = true;
-    everyvideo.forEach(e1 => {
-        if(e1.currentTime + thumbnailinterval > e1.duration) {
-            e1.currentTime = 0.0;
-        }
-        else {
-            e1.currentTime += thumbnailinterval;
-        }
-    });
+
+    // everyvideo.forEach(e1 => {
+    //     if(e1.currentTime + thumbnailinterval > e1.duration) {
+    //         e1.currentTime = 0.0;
+    //     }
+    //     else {
+    //         e1.currentTime += thumbnailinterval;
+    //     }
+    // });
 }
 
 function videothumbnails_updating_start() {
@@ -813,8 +880,6 @@ function startup() {
     
 }
 
-startup();
-
 function video_to_image_base64(video) {
     const canvas = document.querySelector('canvas');
     canvas.width = video.videoWidth;
@@ -839,12 +904,21 @@ function indexedDB_init() {
 
     request.onsuccess = (e) => {
         DBSession = request.result;
+        
+        startup();
     }
     
     request.onerror = (e) => {
         console.error('indexedDB Error');
     }
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    indexedDB_init();
+    
+}, false)
+
+
 
 function indexedDB_addvalue(filename, filedata, videocurrentpos, evt) {
     const transaction = DBSession.transaction(['thumbnailstore'], 'readwrite');
@@ -864,9 +938,26 @@ function indexedDB_addvalue(filename, filedata, videocurrentpos, evt) {
 
     resp.onerror = () => {
         evt(false);
+        console.error("indexedDB_addvalue Failed");
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    indexedDB_init();
-}, false)
+async function indexedDB_get(filename) {
+    const transaction = DBSession.transaction(['thumbnailstore'], 'readwrite');
+    const store = transaction.objectStore('thumbnailstore');
+
+    return new Promise( (resolve) => {
+        const resp = store.get(filename);
+    
+        resp.onsuccess = () => {
+            resolve(resp.result);
+        }
+    
+        resp.onerror = () => {
+            console.error("indexedDB_get Failed");
+            resolve(null);    
+        }
+    });
+    
+}
+
