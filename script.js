@@ -18,7 +18,6 @@ document.addEventListener("mouseleave", () => {
         document.querySelector('.control').style.visibility = 'hidden';
         
     ctrldown = false;
-    console.log(`ctrldown - ${ctrldown}`);
 });
 
 document.addEventListener("mouseenter", (param) => {
@@ -27,22 +26,31 @@ document.addEventListener("mouseenter", (param) => {
         showornotcontrolPanel(param.y);
 
     ctrldown = false;
-    console.log(`ctrldown - ${ctrldown}`);
+});
+
+let loadinglight = document.querySelector('.loadinglight');
+loadinglight.addEventListener("click", () => {
+    if(videothumbnails_updating) {
+        videothumbnails_updating_finish();
+    }
+    else {
+        videothumbnails_updating_start();
+    }
 });
 
 let controlpanel_force_visible = false;
 function bodybackgroundcolor_default() {
-    document.querySelector('.loadinglight').style.backgroundColor = 'greenyellow';
+    loadinglight.style.backgroundColor = 'greenyellow';
     document.querySelector('.control').style.visibility = 'hidden';
     controlpanel_force_visible = false;
 }
 
 function bodybackgroundcolor_busy_exiting() {
-    document.querySelector('.loadinglight').style.backgroundColor = 'yellow';
+    loadinglight.style.backgroundColor = 'yellow';
 }
 
 function bodybackgroundcolor_busy() {
-    document.querySelector('.loadinglight').style.backgroundColor = 'red';
+    loadinglight.style.backgroundColor = 'red';
     document.querySelector('.control').style.visibility = 'visible';
     controlpanel_force_visible = true;
 }
@@ -100,7 +108,6 @@ document.addEventListener("keydown", function(e) {
     
     if(e.key == "Control") {
         ctrldown = true;
-        console.log(`ctrldown - ${ctrldown}`);
     }
     else if(e.key == 'Escape') {
         
@@ -153,7 +160,6 @@ document.addEventListener("keyup", function(e) {
     if(every_input_disable) return;
     if(e.key == "Control") {
         ctrldown = false;
-        console.log(`ctrldown - ${ctrldown}`);
     }
 });
 
@@ -405,7 +411,7 @@ function genmp4(ididx, param) {
     videoslist.push(keyvalue);
     let html=`
     <div id=id${ididx} class="videoview" onclick="mp4clicked(this.id)">
-    <video preload="metadata" src="${param}#t=30.0"></video>
+    <video preload="metadata" src="${param}"></video>
     <h6>${name}</h6>
     </div>
     `;
@@ -522,44 +528,53 @@ function showcurrentpage(isnext, pageidx=-1) {
         every_input_disable = true;
         videothumbnails_updating_readynext = false;
         everyvideocounting = 0;
+
         everyvideo.forEach(vid => {
-            vid.addEventListener('seeked', () => {
-                
-                if(video_mouseover_playing_video_playing)
-                {
-                    eachvideo_interval_playing_next_ready = true;
-                    return;
-                }
-                
-                everyvideocounting++;
-                if(everyvideocounting == everyvideo.length) {
-                    console.log("videos loading done !!!");
-            
-                    everyvideocounting = 0;
-                    videothumbnails_updating_readynext = true;
-                    
-                    if(videothumbnails_updating) {
-                        console.log("update next !!!");
-                        update_next_everyvideothumbnail();
-                    }
-                    else {
-                        console.log("videothumbnails_updating Ended");
-                        bodybackgroundcolor_default();
-                        every_input_disable = false;
-                    }
-                }
-
-            });
-
-        });
-
-
-        everyvideo.forEach(e => {
-            e.addEventListener("mouseenter", eachvideo_mouseenter);
-            e.addEventListener("mouseleave", eachvideo_mouseleave);
+            vid.addEventListener('seeked', video_onseeked_event);
+            vid.addEventListener("mouseenter", eachvideo_mouseenter);
+            vid.addEventListener("mouseleave", eachvideo_mouseleave);
         })
 
+        everyvideo.forEach(vid => {
+            vid.currentTime = 30.0;
+        });
+
     }
+}
+
+function video_onseeked_event(video) {
+    let name = video.target.src;
+    name = name.substring(name.lastIndexOf('/')+1);
+
+    indexedDB_addvalue(name, video_to_image_base64(video.target), video.target.currentTime, () => {
+        console.log(`cached - ${name}`);
+    });
+    
+
+    if(video_mouseover_playing_video_playing)
+    {
+        eachvideo_interval_playing_next_ready = true;
+        return;
+    }
+    
+    everyvideocounting++;
+    if(everyvideocounting == everyvideo.length) {
+        console.log("videos loading done !!!");
+
+        everyvideocounting = 0;
+        videothumbnails_updating_readynext = true;
+        
+        if(videothumbnails_updating) {
+            console.log("update next !!!");
+            update_next_everyvideothumbnail();
+        }
+        else {
+            console.log("videothumbnails_updating Ended");
+            bodybackgroundcolor_default();
+            every_input_disable = false;
+        }
+    }
+
 }
 
 let eachvideo_interval_playing_next_ready = false;
@@ -582,8 +597,6 @@ function eachvideo_interval_playing_handler_elapsed() {
             step_count = 0;
         }
     }
-
-
 }
 
 function eachvideo_mouseenter(p) {
@@ -660,7 +673,6 @@ function videothumbnails_updating_finish() {
     }
 }
 
-
 function extractlastnumberfromfilename(str) {
     let dotpos = str.lastIndexOf('.');
     if(dotpos == -1) return -1;
@@ -686,113 +698,175 @@ function extractlastnumberfromfilename(str) {
     {
         console.log(`Number`);
         return Number(src1);
-    }   
-
+    }
 }
 
-if(parampath != null)
-{
-    const jsonraw=dirseek(parampath);
-    const jsondata=JSON.parse(jsonraw); 
-    
-    if(jsondata["ret"])
+
+function startup() {
+
+    if(parampath != null)
     {
-        // console.info(`Successed`);
-    
-        dirlist = jsondata["data"];
-
-        while(true) {  
-            const find__ = dirlist.find((a) => { return a["d"][0] == '.';});
-            if(find__ == undefined) break;
-            // console.log(`ignore - ${find__["d"]}`);
-            const idx = dirlist.lastIndexOf(find__);
-            dirlist.splice(idx, 1);
-        }
-
-        itemcount = dirlist.length;
-
-        for(let i=0;i<dirlist.length;i++)
-        {
-            dirlist[i]["t"] = Date.parse(dirlist[i]["t"]);
-        }
-
-
-        var imgfileslist = dirlist.filter(x => 
-            x["d"].substring(x["d"].lastIndexOf('.')+1) == 'jpeg' || 
-            x["d"].substring(x["d"].lastIndexOf('.')+1) == 'jpg'  );
+        const jsonraw=dirseek(parampath);
+        const jsondata=JSON.parse(jsonraw); 
         
-        if(imgfileslist.length == 0)
+        if(jsondata["ret"])
         {
-            console.log("Sort by Time !!!!");
-            dirlist.sort((a,b) => { return b["t"] - a["t"]; });
-        }
-        else
-        {
-            if(imgfileslist.length / dirlist.length > 0.5) // check the Ratio of Image File and another File
-            {
-                console.log("Sort by Name !!!!");
-                dirlist.sort((a,b) => {
-                    return extractlastnumberfromfilename(a["d"]) - extractlastnumberfromfilename(b["d"]);
-                });
+            // console.info(`Successed`);
+        
+            dirlist = jsondata["data"];
+    
+            while(true) {  
+                const find__ = dirlist.find((a) => { return a["d"][0] == '.';});
+                if(find__ == undefined) break;
+                // console.log(`ignore - ${find__["d"]}`);
+                const idx = dirlist.lastIndexOf(find__);
+                dirlist.splice(idx, 1);
             }
-            else
+    
+            itemcount = dirlist.length;
+    
+            for(let i=0;i<dirlist.length;i++)
+            {
+                dirlist[i]["t"] = Date.parse(dirlist[i]["t"]);
+            }
+    
+    
+            var imgfileslist = dirlist.filter(x => 
+                x["d"].substring(x["d"].lastIndexOf('.')+1) == 'jpeg' || 
+                x["d"].substring(x["d"].lastIndexOf('.')+1) == 'jpg'  );
+            
+            if(imgfileslist.length == 0)
             {
                 console.log("Sort by Time !!!!");
                 dirlist.sort((a,b) => { return b["t"] - a["t"]; });
             }
-        }
-
-        const dirname = parampath.substring(parampath.lastIndexOf('/')+1);
-
-        if(paramfind != null) 
-            title.innerText = `${dirname} - ${paramfind}`;
-        else
-            title.innerText = `${dirname}/${itemcount} items`;
-
-        // if(itemcount > dirlistmaxshow)
-        // {
-        //     let idx= Math.floor(itemcount / dirlistmaxshow);
-        //     btnnext.innerText = `Next - ${idx}`;
-        // }
-
-        if(paramfind != null) {
-            submitsearching(paramfind);
-        }
-        else {
-            let page = -1;
-
-            if(parampage != null)
-            {
-                page = Number(parampage);
-                showcurrentpage(-1, page); // 1 to next , 0 to prev , -1 to load current pos
-            }
             else
             {
-                showcurrentpage(-1); // 1 to next , 0 to prev , -1 to load current pos
+                if(imgfileslist.length / dirlist.length > 0.5) // check the Ratio of Image File and another File
+                {
+                    console.log("Sort by Name !!!!");
+                    dirlist.sort((a,b) => {
+                        return extractlastnumberfromfilename(a["d"]) - extractlastnumberfromfilename(b["d"]);
+                    });
+                }
+                else
+                {
+                    console.log("Sort by Time !!!!");
+                    dirlist.sort((a,b) => { return b["t"] - a["t"]; });
+                }
             }
-
+    
+            const dirname = parampath.substring(parampath.lastIndexOf('/')+1);
+    
+            if(paramfind != null) 
+                title.innerText = `${dirname} - ${paramfind}`;
+            else
+                title.innerText = `${dirname}/${itemcount} items`;
+    
+            // if(itemcount > dirlistmaxshow)
+            // {
+            //     let idx= Math.floor(itemcount / dirlistmaxshow);
+            //     btnnext.innerText = `Next - ${idx}`;
+            // }
+    
+            if(paramfind != null) {
+                submitsearching(paramfind);
+            }
+            else {
+                let page = -1;
+    
+                if(parampage != null)
+                {
+                    page = Number(parampage);
+                    showcurrentpage(-1, page); // 1 to next , 0 to prev , -1 to load current pos
+                }
+                else
+                {
+                    showcurrentpage(-1); // 1 to next , 0 to prev , -1 to load current pos
+                }
+    
+            }
+    
+            console.info(`folderslist - ${folderslist.length}`);
+            console.info(`videoslist - ${videoslist.length}`);
+            // reloadimages();
         }
-
-        console.info(`folderslist - ${folderslist.length}`);
-        console.info(`videoslist - ${videoslist.length}`);
-        // reloadimages();
+        else
+        {
+            FilesPanel.innerHTML = `<h1>failed</h1>`
+        }
     }
     else
     {
-        FilesPanel.innerHTML = `<h1>failed</h1>`
+        let contents = "";
+        let ididx=0;
+    
+        drivelist.forEach(element => {
+            contents += genfolder(ididx, element);
+            ididx++;
+        });
+    
+        itemcount = drivelist.length;
+        
+        FilesPanel.innerHTML=contents;
+    }
+    
+}
+
+startup();
+
+function video_to_image_base64(video) {
+    const canvas = document.querySelector('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+    const scale = 0.7;
+    const canvasValue = canvas.toDataURL('image/jpeg', scale); // Base64 저장 - 0 ~ 1 퀄리티 범위
+    return canvasValue;
+}
+
+let DBSession;
+
+function indexedDB_init() {
+    const request = window.indexedDB.open('customed-web-browser');
+    
+    request.onupgradeneeded = (e) => {
+        console.log('onupgradeneeded');
+        let result = e.target.result.createObjectStore('thumbnailstore', {keyPath: 'filename'});
+        // result.createIndex('filename', 'filename', {unique: false});
+        // result.createIndex('filedata', 'filedata', {unique: false});
+    }
+
+    request.onsuccess = (e) => {
+        DBSession = request.result;
+    }
+    
+    request.onerror = (e) => {
+        console.error('indexedDB Error');
     }
 }
-else
-{
-    let contents = "";
-    let ididx=0;
 
-    drivelist.forEach(element => {
-        contents += genfolder(ididx, element);
-        ididx++;
-    });
-
-    itemcount = drivelist.length;
+function indexedDB_addvalue(filename, filedata, videocurrentpos, evt) {
+    const transaction = DBSession.transaction(['thumbnailstore'], 'readwrite');
+    const store = transaction.objectStore('thumbnailstore');
     
-    FilesPanel.innerHTML=contents;
+    const item = {
+        filename: `${filename}`,
+        filedata: `${filedata}`,
+        position: `${videocurrentpos}`
+    }
+    
+    const resp = store.put(item);
+    
+    resp.onsuccess = () => {
+        evt(true);
+    }
+
+    resp.onerror = () => {
+        evt(false);
+    }
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    indexedDB_init();
+}, false)
