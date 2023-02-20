@@ -388,13 +388,11 @@ function genfolder(ididx, param) {
     return html;
 }
 
-let videoslist = [];
-
 function mp4clicked(element) {
     if(every_input_disable) return;
     console.log(`clicked mp4 ${element}`);
     let id = element.substring(element.lastIndexOf("id")+2);
-    let nextpath = videoslist.find(x=> x.id == id).data;
+    let nextpath = thumbnailed_video_list.find(x=> x.id == id).src;
 
     console.log(`nextpath : ${nextpath}`);
     
@@ -407,11 +405,6 @@ let thumbnailed_video_list = [];
 
 async function genmp4(ididx, param) {
     let name = param.substring(param.lastIndexOf('/')+1);
-    
-    videoslist.push({
-        id: ididx,
-        data: param
-    });
 
     const get_result = await indexedDB_get(name);
     
@@ -444,7 +437,8 @@ async function genmp4(ididx, param) {
 
         thumbnailed_video_list.push(
             {
-                ididx: ididx,
+                id: ididx,
+                src: param,
                 imagedthumbnail: imagedthumbnail,
                 filename: name
             }
@@ -453,6 +447,8 @@ async function genmp4(ididx, param) {
     });
     
 }
+
+let countsforwaitingseekedvideo = 0;
 
 let FilesPanel = document.getElementById("FilesPanel");
 let title = document.getElementById("title");
@@ -466,8 +462,8 @@ let itemcount=0;
 
 async function showcurrentpage(isnext, pageidx=-1) {
     folderslist = [];
-    videoslist = [];
     thumbnailed_video_list = [];
+    countsforwaitingseekedvideo = 0;
 
     if(isnext == 1)
     {
@@ -558,13 +554,25 @@ async function showcurrentpage(isnext, pageidx=-1) {
 
     FilesPanel.innerHTML=contents;
 
+    console.info(`folderslist - ${folderslist.length}`);
+    console.info(`thumbnailed_video_list - ${thumbnailed_video_list.length}`);
+
+
+    thumbnailed_video_list.forEach((each) => {
+        if(!each['imagedthumbnail']) {
+            countsforwaitingseekedvideo++;
+        }
+    })
+
+    console.log(`${countsforwaitingseekedvideo} videos needs to seeking`);
 
     thumbnailed_video_list.forEach((each) => {
         if(each['imagedthumbnail']) {
 
         }
         else {
-            console.log(`not cached - ${each['filename']}`);
+            console.log(`video prepare - ${each['filename']}`);
+
             const videoviews = document.querySelectorAll('.videoview');
 
             videoviews.forEach((videoview) => {
@@ -584,26 +592,24 @@ TODO Here !!!!!!!!!!!!!!
 캐시된 파일은 캐시 데이터 띄우고 캐시 없는 파일은 비디오 currentTime 값 넣도록 작업함
 
 캐시 없는 파일은 비디오 currentTime 값 넣은 video Element 들은 seeked 콜백 등록해서
-videothumbnails_updating Ended 도달 되도록 작업 필요
+videothumbnails_updating Ended 도달 되도록 작업 필요 
 
 그다음에 thumbnail updating 기능 진행
-
 */
-    
 
-    // everyvideo = document.querySelectorAll('video');
-    // if(everyvideo.length > 0) {
-    //     bodybackgroundcolor_busy();
-    //     every_input_disable = true;
-    //     videothumbnails_updating_readynext = false;
-    //     everyvideocounting = 0;
+    everyvideo = document.querySelectorAll('video');
+    if(countsforwaitingseekedvideo > 0) {
+        bodybackgroundcolor_busy();
+        every_input_disable = true;
+        videothumbnails_updating_readynext = false;
+        everyvideocounting = 0;
 
-    //     everyvideo.forEach(vid => {
-    //         vid.addEventListener('seeked', video_onseeked_event);
-    //         vid.addEventListener("mouseenter", eachvideo_mouseenter);
-    //         vid.addEventListener("mouseleave", eachvideo_mouseleave);
-    //     })
-    // }
+        everyvideo.forEach(vid => {
+            vid.addEventListener('seeked', video_onseeked_event);
+            vid.addEventListener("mouseenter", eachvideo_mouseenter);
+            vid.addEventListener("mouseleave", eachvideo_mouseleave);
+        })
+    }
 
 }
 
@@ -623,23 +629,23 @@ function video_onseeked_event(video) {
         return;
     }
     
-    // everyvideocounting++;
-    // if(everyvideocounting == everyvideo.length) {
-    //     console.log("videos loading done !!!");
+    everyvideocounting++;
+    if(everyvideocounting == countsforwaitingseekedvideo) {
+        console.log("videos loading done !!!");
 
-    //     everyvideocounting = 0;
-    //     videothumbnails_updating_readynext = true;
+        everyvideocounting = 0;
+        videothumbnails_updating_readynext = true;
         
-    //     if(videothumbnails_updating) {
-    //         console.log("update next !!!");
-    //         update_next_everyvideothumbnail();
-    //     }
-    //     else {
-    //         console.log("videothumbnails_updating Ended");
-    //         bodybackgroundcolor_default();
-    //         every_input_disable = false;
-    //     }
-    // }
+        if(videothumbnails_updating) {
+            console.log("update next !!!");
+            update_next_everyvideothumbnail();
+        }
+        else {
+            console.log("videothumbnails_updating Ended");
+            bodybackgroundcolor_default();
+            every_input_disable = false;
+        }
+    }
 
 }
 
@@ -702,21 +708,21 @@ let video_mouseover_playing_video = null;
 let video_mouseover_staying_check_timer = null;
 let video_mouseover_playing_video_playing = false;
 
-// let everyvideo;
-// let everyvideocounting = 0;
+let everyvideo;
+let everyvideocounting = 0;
 
 function update_next_everyvideothumbnail() {
     bodybackgroundcolor_busy();
     every_input_disable = true;
 
-    // everyvideo.forEach(e1 => {
-    //     if(e1.currentTime + thumbnailinterval > e1.duration) {
-    //         e1.currentTime = 0.0;
-    //     }
-    //     else {
-    //         e1.currentTime += thumbnailinterval;
-    //     }
-    // });
+    everyvideo.forEach(e1 => {
+        if(e1.currentTime + thumbnailinterval > e1.duration) {
+            e1.currentTime = 0.0;
+        }
+        else {
+            e1.currentTime += thumbnailinterval;
+        }
+    });
 }
 
 function videothumbnails_updating_start() {
@@ -754,7 +760,7 @@ function extractlastnumberfromfilename(str) {
             {
                 cut = i+1;
                 break;
-            }
+            } 
         }
     
         if(cut == -1) return -1;
@@ -769,7 +775,7 @@ function extractlastnumberfromfilename(str) {
 }
 
 
-function startup() {
+async function startup() {
 
     if(parampath != null)
     {
@@ -854,9 +860,6 @@ function startup() {
     
             }
     
-            console.info(`folderslist - ${folderslist.length}`);
-            console.info(`videoslist - ${videoslist.length}`);
-            // reloadimages();
         }
         else
         {
