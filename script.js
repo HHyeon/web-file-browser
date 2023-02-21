@@ -414,7 +414,7 @@ async function genmp4(ididx, param) {
         if(get_result == undefined) {
             let html=`
             <div id=id${ididx} class="videoview" onclick="mp4clicked(this.id)">
-            <img hidden></img>
+            <img></img>
             <video buffered src="${param}"></video>
             <h6>${name}</h6>
             </div>
@@ -427,12 +427,14 @@ async function genmp4(ididx, param) {
             let html=`
             <div id=id${ididx} class="videoview" onclick="mp4clicked(this.id)">
             <img src=${get_result['filedata']}></img>
-            <video hidden buffered src="${param}"></video>
+            <video buffered src="${param}"></video>
             <h6>${name}</h6>
             </div>
             `;
             resolve(html);
             imagedthumbnail = true;
+
+            console.log(`cached data ready - ${name} (${Number(get_result['position'])-thumbnailinterval})`);
         }
 
         thumbnailed_video_list.push(
@@ -440,7 +442,8 @@ async function genmp4(ididx, param) {
                 id: ididx,
                 src: param,
                 imagedthumbnail: imagedthumbnail,
-                filename: name
+                filename: name,
+                videopos: Number(get_result['position'])-thumbnailinterval
             }
         );
 
@@ -564,13 +567,24 @@ async function showcurrentpage(isnext, pageidx=-1) {
         }
     })
 
-    console.log(`${countsforwaitingseekedvideo} videos needs to seeking`);
+    console.log(`${countsforwaitingseekedvideo} videos are started seeking`);
 
     thumbnailed_video_list.forEach((each) => {
-        if(each['imagedthumbnail']) {
+        
+        document.querySelectorAll('.videoview').forEach(view => {
+            if(each['imagedthumbnail'])
+            {
+                view.children[0].style.display = ''; // img 
+                view.children[1].style.display = 'none'; // video
+            }
+            else
+            {
+                view.children[0].style.display = 'none'; // img 
+                view.children[1].style.display = ''; // video
+            }
+        });
 
-        }
-        else {
+        if(!each['imagedthumbnail']) {
             console.log(`video prepare - ${each['filename']}`);
 
             const videoviews = document.querySelectorAll('.videoview');
@@ -587,31 +601,35 @@ async function showcurrentpage(isnext, pageidx=-1) {
         }
     });
     
-/*
-TODO Here !!!!!!!!!!!!!! 
-캐시된 파일은 캐시 데이터 띄우고 캐시 없는 파일은 비디오 currentTime 값 넣도록 작업함
+    /*
+    TODO Here !!!!!!!!!!!!!! 
+    캐시된 파일은 캐시 데이터 띄우고 캐시 없는 파일은 비디오 currentTime 값 넣도록 작업함
 
-캐시 없는 파일은 비디오 currentTime 값 넣은 video Element 들은 seeked 콜백 등록해서
-videothumbnails_updating Ended 도달 되도록 작업 필요 
+    캐시 없는 파일은 비디오 currentTime 값 넣은 video Element 들은 seeked 콜백 등록해서
+    videothumbnails_updating Ended 도달 되도록 작업 필요 
 
-그다음에 thumbnail updating 기능 진행
-*/
+    그다음에 thumbnail updating 기능 진행
+    */
 
-    everyvideo = document.querySelectorAll('video');
+    let everyvideo = document.querySelectorAll('video');
+    everyvideo.forEach(vid => {
+        vid.addEventListener('seeked', video_onseeked_event);
+        vid.addEventListener("mouseenter", eachvideo_mouseenter);
+        vid.addEventListener("mouseleave", eachvideo_mouseleave);
+    })
     if(countsforwaitingseekedvideo > 0) {
         bodybackgroundcolor_busy();
         every_input_disable = true;
         videothumbnails_updating_readynext = false;
-        everyvideocounting = 0;
-
-        everyvideo.forEach(vid => {
-            vid.addEventListener('seeked', video_onseeked_event);
-            vid.addEventListener("mouseenter", eachvideo_mouseenter);
-            vid.addEventListener("mouseleave", eachvideo_mouseleave);
-        })
+        videoseekedindex = 0;
     }
-
+    else
+    {
+        videothumbnails_updating_readynext = true;
+    }
 }
+
+let videoseekedindex = 0;
 
 function video_onseeked_event(video) {
     let name = video.target.src;
@@ -620,7 +638,7 @@ function video_onseeked_event(video) {
     const imagedatabase64 = video_to_image_base64(video.target);
 
     indexedDB_addvalue(name, imagedatabase64, video.target.currentTime, () => {
-        console.log(`cached - ${name}`);
+        console.log(`cached - ${name} (${video.target.currentTime})`);
     });
 
     if(video_mouseover_playing_video_playing)
@@ -629,11 +647,11 @@ function video_onseeked_event(video) {
         return;
     }
     
-    everyvideocounting++;
-    if(everyvideocounting == countsforwaitingseekedvideo) {
+    videoseekedindex++;
+    if(videoseekedindex == countsforwaitingseekedvideo) {
         console.log("videos loading done !!!");
 
-        everyvideocounting = 0;
+        videoseekedindex = 0;
         videothumbnails_updating_readynext = true;
         
         if(videothumbnails_updating) {
@@ -708,20 +726,36 @@ let video_mouseover_playing_video = null;
 let video_mouseover_staying_check_timer = null;
 let video_mouseover_playing_video_playing = false;
 
-let everyvideo;
-let everyvideocounting = 0;
-
 function update_next_everyvideothumbnail() {
     bodybackgroundcolor_busy();
     every_input_disable = true;
 
-    everyvideo.forEach(e1 => {
-        if(e1.currentTime + thumbnailinterval > e1.duration) {
-            e1.currentTime = 0.0;
-        }
-        else {
-            e1.currentTime += thumbnailinterval;
-        }
+    countsforwaitingseekedvideo = document.querySelectorAll('video').length;
+    videoseekedindex = 0;
+
+    document.querySelectorAll('.videoview').forEach(view => {
+        view.children[0].style.display = 'none'; // img 
+        view.children[1].style.display = ''; // video
+    });
+
+    thumbnailed_video_list.forEach(each => {
+        const vids = document.querySelectorAll('video');
+        vids.forEach(vid => {
+            if(vid.src.endsWith(each['src']))
+            {
+                let curr = Number(each['videopos']);
+
+                if(curr + thumbnailinterval > vid.duration) {
+                    curr = 0.0;
+                }
+                else {
+                    curr += thumbnailinterval;
+                }
+                
+                vid.currentTime = curr;
+                each['videopos'] = curr;
+            }
+        });
     });
 }
 
