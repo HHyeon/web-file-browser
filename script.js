@@ -411,6 +411,8 @@ async function genmp4(ididx, param) {
     return new Promise((resolve) => {
         let imagedthumbnail;
 
+        let videopos___ = video_default_initial_seeking;
+
         if(get_result == undefined) {
             let html=`
             <div id=id${ididx} class="videoview" onclick="mp4clicked(this.id)">
@@ -424,6 +426,9 @@ async function genmp4(ididx, param) {
         }
         else
         {
+            videopos___ = Number(get_result['position']);
+            if(videopos___ >= thumbnailinterval) videopos___ -= thumbnailinterval;
+
             let html=`
             <div id=id${ididx} class="videoview" onclick="mp4clicked(this.id)">
             <img src=${get_result['filedata']}></img>
@@ -433,9 +438,9 @@ async function genmp4(ididx, param) {
             `;
             resolve(html);
             imagedthumbnail = true;
-
-            console.log(`cached data ready - ${name} (${Number(get_result['position'])-thumbnailinterval})`);
         }
+
+        console.log(`add!!! - ${param} , ${videopos___}`);
 
         thumbnailed_video_list.push(
             {
@@ -443,7 +448,7 @@ async function genmp4(ididx, param) {
                 src: param,
                 imagedthumbnail: imagedthumbnail,
                 filename: name,
-                videopos: Number(get_result['position'])-thumbnailinterval
+                videopos: videopos___
             }
         );
 
