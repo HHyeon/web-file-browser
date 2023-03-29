@@ -590,31 +590,34 @@ async function showcurrentpage(isnext, pageidx=-1) {
         });
 
         if(!each['imagedthumbnail']) {
-            console.log(`video prepare - ${each['filename']}`);
+            console.log(`seeking video - ${each['filename']}`);
 
             const videoviews = document.querySelectorAll('.videoview');
 
+            let not_found = true;
             videoviews.forEach((videoview) => {
-                if(videoview.children[1].src.endsWith(each['filename'])) {
+
+                const p1 = decodeURI(videoview.children[1].src);
+                const p2 = each['filename'];
+
+                // console.log(`p1 - ${p1}`);
+                // console.log(`p2 - ${p2}`);
+
+                if(p1.endsWith(p2)) {
                     console.log(`default seek - ${each['filename']}`);
                     videoview.children[0].style.visibility = 'hidden' // make img Element hidden
                     videoview.children[1].style.visibility = '' // make video Element visible
                     videoview.children[1].currentTime = video_default_initial_seeking;
+                    not_found = false;
                 }
             });
+
+            if(not_found) {
+                console.log(`####################### founding Failed #######################`);
+            }
             
         }
     });
-    
-    /*
-    TODO Here !!!!!!!!!!!!!! 
-    캐시된 파일은 캐시 데이터 띄우고 캐시 없는 파일은 비디오 currentTime 값 넣도록 작업함
-
-    캐시 없는 파일은 비디오 currentTime 값 넣은 video Element 들은 seeked 콜백 등록해서
-    videothumbnails_updating Ended 도달 되도록 작업 필요 
-
-    그다음에 thumbnail updating 기능 진행
-    */
 
     let everyvideo = document.querySelectorAll('video');
     everyvideo.forEach(vid => {
@@ -637,6 +640,9 @@ async function showcurrentpage(isnext, pageidx=-1) {
 let videoseekedindex = 0;
 
 function video_onseeked_event(video) {
+
+    console.log(`seeked - ${video.srcpath}`);
+
     let name = video.target.src;
     name = name.substring(name.lastIndexOf('/')+1);
 
