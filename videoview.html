@@ -48,7 +48,7 @@
     <body oncontextmenu="return false">
 
         <div class="container">
-            <video id="player" buffered autoplay></video>
+            <video id="player" style="object-fit: contain;" buffered autoplay></video>
 
             <h1 id="label1"></h1>
             <h1 id="label2"></h1>
@@ -77,8 +77,8 @@
 
             }
 
-            const smallmove = 1.0;
-            const normalmove = 5.0;
+            const smallmove = 3.0;
+            const normalmove = 10.0;
             const bigmove = 30.0;
 
             const urlStr = window.location.href;
@@ -135,11 +135,26 @@
 
             let video_cover_horizontal_moving = 10;
 
+            let rotation_deg=0;
+
             function onKeydown(param)
             {
                 console.log(param.key);
 
                 switch(param.key){
+                    case 'r':
+
+                    console.log(`rotation_deg - ${rotation_deg}`);
+
+                    rotation_deg += 90;
+                    rotation_deg %= 360;
+
+                    if(rotation_deg == 90 || rotation_deg == 270)
+                        player.style.transform = `scale(2, 2) rotate(${rotation_deg}deg)`;
+                    else
+                        player.style.transform = `scale(1, 1) rotate(${rotation_deg}deg)`;
+                    
+                    break;
                     case '[':
                         if(video_cover_horizontal_moving > 0) video_cover_horizontal_moving--;
                         setLabelText(`${video_cover_horizontal_moving*5}%`);
