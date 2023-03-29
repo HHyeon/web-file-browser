@@ -640,15 +640,12 @@ async function showcurrentpage(isnext, pageidx=-1) {
 let videoseekedindex = 0;
 
 function video_onseeked_event(video) {
-
-    console.log(`seeked - ${video.srcpath}`);
-
     let name = video.target.src;
     name = name.substring(name.lastIndexOf('/')+1);
 
     const imagedatabase64 = video_to_image_base64(video.target);
 
-    indexedDB_addvalue(name, imagedatabase64, video.target.currentTime, () => {
+    indexedDB_addvalue(decodeURI(name), imagedatabase64, video.target.currentTime, () => {
         console.log(`cached - ${name} (${video.target.currentTime})`);
     });
 

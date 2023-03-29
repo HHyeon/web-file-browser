@@ -152,7 +152,11 @@
                     if(rotation_deg == 90 || rotation_deg == 270)
                         player.style.transform = `scale(2, 2) rotate(${rotation_deg}deg)`;
                     else
+                    {
                         player.style.transform = `scale(1, 1) rotate(${rotation_deg}deg)`;
+                        document.querySelector('video').style.objectFit='contain';
+                    }
+                        
                     
                     break;
                     case '[':
