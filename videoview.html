@@ -137,20 +137,47 @@
 
             let rotation_deg=0;
 
+            function player_setvertical()
+            {
+            }
+
+
+            let muteState = false;
+            let mutevolumestore = 0.00;
+
             function onKeydown(param)
             {
                 console.log(param.key);
 
                 switch(param.key){
-                    case 'r':
+                    case 'm':
+                        muteState = !muteState;
+                        if(muteState)
+                        {
+                            mutevolumestore = player.volume;
+                            player.volume = 0.00;
+                            setLabelText("Muted");
+                        }
+                        else
+                        {
+                            player.volume = mutevolumestore;
+                            
+                            setLabelText(`volumn: ${parseInt(player.volume*100)}%`);
+                        }
+                    break;
 
+                    case 'r':
+                        
                     console.log(`rotation_deg - ${rotation_deg}`);
 
                     rotation_deg += 90;
                     rotation_deg %= 360;
 
                     if(rotation_deg == 90 || rotation_deg == 270)
-                        player.style.transform = `scale(2, 2) rotate(${rotation_deg}deg)`;
+                    {
+                        const ratio = player.videoWidth / player.videoHeight;
+                        player.style.transform = `scale(${ratio}, ${ratio}) rotate(${rotation_deg}deg)`;
+                    }
                     else
                     {
                         player.style.transform = `scale(1, 1) rotate(${rotation_deg}deg)`;
