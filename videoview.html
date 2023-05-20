@@ -55,6 +55,17 @@
         </div>
         
         <script>
+            let dirlist = null;
+            let currentfilename;
+            let currentdir;
+
+            function dirseek(param) {
+                let xmlhttp = new XMLHttpRequest();
+                let url=`dirseek.php?x=${param}`;
+                xmlhttp.open("GET", url, false);
+                xmlhttp.send(null);
+                return xmlhttp.responseText;
+            };
 
             player.addEventListener("timeupdate", (event) => {
                 const progress = (player.currentTime / player.duration * 100).toFixed(2);
@@ -183,9 +194,57 @@
                         player.style.transform = `scale(1, 1) rotate(${rotation_deg}deg)`;
                         document.querySelector('video').style.objectFit='contain';
                     }
-                        
                     
                     break;
+
+                    case 'PageDown':
+                        {
+                            let currentfileidx = dirlist.findIndex((a)=> {return a['d']==currentfilename});
+
+                            if(currentfileidx != -1)
+                            {
+                                currentfileidx++;
+                                
+                                if(currentfileidx >= dirlist.length) currentfileidx = 0;
+                                const nextvidpath = currentdir + '/' + dirlist[currentfileidx]['d'];
+                                currentfilename = dirlist[currentfileidx]['d'];
+
+                                player.src = nextvidpath; 
+                                console.log(`next video - ${nextvidpath}`);
+
+                                setLabelText(`Index ${currentfileidx+1}/${dirlist.length} - ${currentfilename}`);
+                                
+                                // let newpage = `./videoview.html?p=${nextvidpath}`;
+                                // location.replace(newpage);
+                            }
+                        }
+
+                    break;
+
+                    case 'PageUp':
+                        {
+                            let currentfileidx = dirlist.findIndex((a)=> {return a['d']==currentfilename});
+
+                            if(currentfileidx != -1)
+                            {
+                                currentfileidx--;
+                                
+                                if(currentfileidx < 0) currentfileidx = dirlist.length-1;
+                                const nextvidpath = currentdir + '/' + dirlist[currentfileidx]['d'];
+                                currentfilename = dirlist[currentfileidx]['d'];
+
+                                player.src = nextvidpath; 
+                                console.log(`prev video - ${nextvidpath}`);
+
+                                setLabelText(`Index ${currentfileidx+1}/${dirlist.length} - ${currentfilename}`);
+                                
+                                // let newpage = `./videoview.html?p=${nextvidpath}`;
+                                // location.replace(newpage);
+                            }
+                        }
+                    break;
+
+
                     case '[':
                         if(video_cover_horizontal_moving > 0) video_cover_horizontal_moving--;
                         setLabelText(`${video_cover_horizontal_moving*5}%`);
@@ -486,9 +545,48 @@
             if(path != null)
             {
                 console.log(`path - ${path}`);
+                currentdir = path.substr(0, path.lastIndexOf('/'));
+                currentfilename = path.substr(path.lastIndexOf('/')+1);
+
+                const jsonraw=dirseek(currentdir);
+                const jsondata=JSON.parse(jsonraw); 
+                
+                if(jsondata["ret"])
+                {
+                    dirlist = jsondata["data"];
+                    
+                    while(true) {  
+                        const find__ = dirlist.find((a) => { return a["d"][0] == '.';});
+                        if(find__ == undefined) break;
+                        // console.log(`ignore - ${find__["d"]}`);
+                        const idx = dirlist.lastIndexOf(find__);
+                        dirlist.splice(idx, 1);
+                    }
+
+                    while(true) {  
+                        const find__ = dirlist.find((a) => { return a["d"].substr(a["d"].lastIndexOf('.')) != ".mp4" });
+                        if(find__ == undefined) break;
+                        // console.log(`ignore - ${find__["d"]}`);
+                        const idx = dirlist.lastIndexOf(find__);
+                        dirlist.splice(idx, 1);
+                    }
+
+                }
+                
+                for(let i=0;i<dirlist.length;i++)
+                {
+                    dirlist[i]["t"] = Date.parse(dirlist[i]["t"]);
+                }
+                
+                dirlist.sort((a,b) => { return b["t"] - a["t"]; });
+
+                console.log(dirlist);
+
                 player = document.getElementById("player");
                 player.src = path;
-                player.volume = 0.1;
+                player.volume = 0.0;
+                
+                setLabelText(currentfilename);
 
                 // var promise = player.play();
 
