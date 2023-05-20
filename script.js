@@ -8,7 +8,7 @@ const urlParams = url.searchParams;
 const parampath = urlParams.get('p');
 const paramfind = urlParams.get('f');
 const parampage = urlParams.get('g');
-const drivelist = ["drv0", "drv1"];
+const drivelist = ["drv0", "drv1", "drv2"];
 
 const input_search = document.querySelector(".input_search");
 let input_search_typing = false;
