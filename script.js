@@ -397,6 +397,9 @@ function mp4clicked(element) {
     console.log(`nextpath : ${nextpath}`);
     
     let newpage = `./videoview.html?p=${nextpath}`;
+
+    if(paramfind != null) newpage += `&f=${paramfind}`;
+
     console.log(newpage);
     window.open(newpage, "_blank");
 }

@@ -95,7 +95,8 @@
             const urlStr = window.location.href;
             const url = new URL(urlStr);
             const urlParams = url.searchParams;
-            const path = urlParams.get('p');
+            const parampath = urlParams.get('p');
+            const paramfind = urlParams.get('f');
 
 
             function pauseplay() {
@@ -542,11 +543,11 @@
 
             });
 
-            if(path != null)
+            if(parampath != null)
             {
-                console.log(`path - ${path}`);
-                currentdir = path.substr(0, path.lastIndexOf('/'));
-                currentfilename = path.substr(path.lastIndexOf('/')+1);
+                console.log(`parampath - ${parampath}`);
+                currentdir = parampath.substr(0, parampath.lastIndexOf('/'));
+                currentfilename = parampath.substr(parampath.lastIndexOf('/')+1);
 
                 const jsonraw=dirseek(currentdir);
                 const jsondata=JSON.parse(jsonraw); 
@@ -580,10 +581,19 @@
                 
                 dirlist.sort((a,b) => { return b["t"] - a["t"]; });
 
+                
+                if(paramfind != null)
+                {
+                    console.log(`filtering by ${paramfind}`);
+                    
+                    dirlist = dirlist.filter(e => e["d"].toUpperCase().includes(paramfind.toUpperCase()));
+                }
+
+
                 console.log(dirlist);
 
                 player = document.getElementById("player");
-                player.src = path;
+                player.src = parampath;
                 player.volume = 0.0;
                 
                 setLabelText(currentfilename);
@@ -602,7 +612,7 @@
             }
             else
             {
-                console.log(`${path} is null`);
+                console.log(`${parampath} is null`);
             }
 
         </script>
