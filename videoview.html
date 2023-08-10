@@ -27,6 +27,8 @@
                 justify-content: center;
                 object-fit: contain;
                 object-position: 50% 50%;
+                filter: saturate(1) contrast(1) brightness(1);
+                transition: filter 0.3s ease;
             }
             
             #label1 {
@@ -55,6 +57,14 @@
         </div>
         
         <script>
+            let video_saturate=1.0;
+            let video_contrast=1.0;
+            let video_brightness=1.0;
+
+            function video_filter_set(){
+                player.style.filter=`saturate(${video_saturate}) contrast(${video_contrast}) brightness(${video_brightness})`;
+            };
+
             let dirlist = null;
             let currentfilename;
             let currentdir;
@@ -198,6 +208,7 @@
                     
                     break;
 
+                    case ']':
                     case 'PageDown':
                         {
                             let currentfileidx = dirlist.findIndex((a)=> {return a['d']==currentfilename});
@@ -222,6 +233,7 @@
 
                     break;
 
+                    case '[':
                     case 'PageUp':
                         {
                             let currentfileidx = dirlist.findIndex((a)=> {return a['d']==currentfilename});
@@ -246,16 +258,18 @@
                     break;
 
 
-                    case '[':
-                        if(video_cover_horizontal_moving > 0) video_cover_horizontal_moving--;
-                        setLabelText(`${video_cover_horizontal_moving*5}%`);
-                        document.querySelector('video').style.objectPosition=`${video_cover_horizontal_moving*5}% 50%`
-                        break;
-                    case ']':
-                        if(video_cover_horizontal_moving <= 19) video_cover_horizontal_moving++;
-                        setLabelText(`${video_cover_horizontal_moving*5}%`);
-                        document.querySelector('video').style.objectPosition=`${video_cover_horizontal_moving*5}% 50%`
-                        break;
+                    // case '[':
+                    //     if(video_cover_horizontal_moving > 0) video_cover_horizontal_moving--;
+                    //     setLabelText(`${video_cover_horizontal_moving*5}%`);
+                    //     document.querySelector('video').style.objectPosition=`${video_cover_horizontal_moving*5}% 50%`
+                    //     break;
+                    // case ']':
+                    //     if(video_cover_horizontal_moving <= 19) video_cover_horizontal_moving++;
+                    //     setLabelText(`${video_cover_horizontal_moving*5}%`);
+                    //     document.querySelector('video').style.objectPosition=`${video_cover_horizontal_moving*5}% 50%`
+                    //     break;
+
+
                     case '0': 
                     case '1': 
                     case '2': 
@@ -309,7 +323,7 @@
                             
                             if(param.shiftKey)
                                 moveunit = normalmove;
-                            else if(param.ctrlKey)
+                            else if(param.ctrlKey || param.metaKey)
                                 moveunit = smallmove;
                             else
                                 moveunit = bigmove;
@@ -330,7 +344,7 @@
                             
                             if(param.shiftKey)
                                 moveunit = normalmove;
-                            else if(param.ctrlKey)
+                            else if(param.ctrlKey || param.metaKey)
                                 moveunit = smallmove;
                             else
                                 moveunit = bigmove;
@@ -341,6 +355,80 @@
 
                             const progress = (player.currentTime / player.duration * 100).toFixed(2);
                             setLabelText(`- ${moveunit}s (${progress}%)`);
+                        }
+                        break;
+
+
+                    case 'Z':
+                    case 'z':
+                        {
+                            if(param.shiftKey)
+                            {
+                                if(video_saturate > 1.0) video_saturate -= 0.1;
+                            }
+                            else
+                            {
+                                if(video_saturate < 2.0) video_saturate += 0.1;
+                            }
+
+                            video_saturate = Math.round(video_saturate * 10) / 10;
+
+                            setLabelText(`saturate - ${video_saturate}`);
+
+                            video_filter_set();
+                        }
+                        break;
+
+                    case 'X':
+                    case 'x':
+                        {
+                            if(param.shiftKey)
+                            {
+                                if(video_contrast > 1.0) video_contrast -= 0.1;
+                            }
+                            else
+                            {
+                                if(video_contrast < 2.0) video_contrast += 0.1;
+                            }
+
+                            video_contrast = Math.round(video_contrast * 10) / 10;
+
+                            setLabelText(`contrast - ${video_contrast}`);
+
+                            video_filter_set();
+                        }
+                        break;
+
+                    case 'C':
+                    case 'c':
+                        {
+                            if(param.shiftKey)
+                            {
+                                if(video_brightness > 1.0) video_brightness -= 0.1;
+                            }
+                            else
+                            {
+                                if(video_brightness < 2.0) video_brightness += 0.1;
+                            }
+
+                            video_brightness = Math.round(video_brightness * 10) / 10;
+
+                            setLabelText(`brightness - ${video_brightness}`);
+
+                            video_filter_set();
+                        }
+                        break;
+
+                    case 'V':
+                    case 'v':
+                        {
+                            video_brightness = 1.0;
+                            video_contrast = 1.0;
+                            video_saturate = 1.0;
+
+                            setLabelText(`filter reset`);
+
+                            video_filter_set();
                         }
                         break;
                 }
@@ -594,7 +682,13 @@
 
                 player = document.getElementById("player");
                 player.src = parampath;
-                player.volume = 0.0;
+
+                video_saturate = 1.0;
+                video_brightness = 1.0;
+                video_contrast = 1.0;
+                video_filter_set();
+
+                player.volume = 0.2;
                 
                 setLabelText(currentfilename);
 
