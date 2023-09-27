@@ -163,6 +163,8 @@
             {
             }
 
+            let setplaytime = false;
+
 
             let muteState = false;
             let mutevolumestore = 0.00;
@@ -172,6 +174,8 @@
                 console.log(param.key);
 
                 switch(param.key){
+
+
                     case 'm':
                         muteState = !muteState;
                         if(muteState)
@@ -207,6 +211,29 @@
                     }
                     
                     break;
+                    
+
+                    case '\\':
+                        {
+                            let randomitem;
+
+                            do
+                            {
+                                randomitem = dirlist[Math.floor(Math.random()*dirlist.length)];
+                            } while(randomitem['d'] == currentfilename);
+                            currentfilename = randomitem['d'];
+
+                            // console.log(`randomitem - ${currentfilename}`);
+                            
+                            const nextvidpath = currentdir + '/' + currentfilename;
+                            player.src = nextvidpath; 
+                            setplaytime = true;
+                            console.log(`next video - ${nextvidpath}`);
+
+                            setLabelText(`random play ${currentfilename}`);
+                        }
+                    break;
+
 
                     case ']':
                     case 'PageDown':
@@ -688,6 +715,14 @@
 
                 player = document.getElementById("player");
                 player.src = parampath;
+                player.addEventListener("playing", () => {
+                    console.log("!!!!!!!!!");
+                    if(setplaytime)
+                    {
+                        setplaytime = false;
+                        player.currentTime = (player.duration / 10) * (2+Math.floor(Math.random()*6));
+                    }
+                });
 
                 video_saturate = 1.0;
                 video_brightness = 1.0;
