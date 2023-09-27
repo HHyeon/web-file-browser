@@ -258,16 +258,16 @@
                     break;
 
 
-                    // case '[':
-                    //     if(video_cover_horizontal_moving > 0) video_cover_horizontal_moving--;
-                    //     setLabelText(`${video_cover_horizontal_moving*5}%`);
-                    //     document.querySelector('video').style.objectPosition=`${video_cover_horizontal_moving*5}% 50%`
-                    //     break;
-                    // case ']':
-                    //     if(video_cover_horizontal_moving <= 19) video_cover_horizontal_moving++;
-                    //     setLabelText(`${video_cover_horizontal_moving*5}%`);
-                    //     document.querySelector('video').style.objectPosition=`${video_cover_horizontal_moving*5}% 50%`
-                    //     break;
+                    case '(':
+                        if(video_cover_horizontal_moving > 0) video_cover_horizontal_moving--;
+                        setLabelText(`${video_cover_horizontal_moving*5}%`);
+                        document.querySelector('video').style.objectPosition=`${video_cover_horizontal_moving*5}% 50%`
+                        break;
+                    case ')':
+                        if(video_cover_horizontal_moving <= 19) video_cover_horizontal_moving++;
+                        setLabelText(`${video_cover_horizontal_moving*5}%`);
+                        document.querySelector('video').style.objectPosition=`${video_cover_horizontal_moving*5}% 50%`
+                        break;
 
 
                     case '0': 
@@ -615,6 +615,12 @@
                     {
                         rightmouse_movestarted = false;
                         speed_currentpushstarts = player.playbackRate;
+                        
+                        if(intervallyspeedinfodisplay != undefined)
+                        {
+                            clearInterval(intervallyspeedinfodisplay);
+                            intervallyspeedinfodisplay = undefined;
+                        }
 
                         console.log("intervallyspeedinfodisplay started");
                         intervallyspeedinfodisplay = setInterval(() => {
