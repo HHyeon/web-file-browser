@@ -621,13 +621,15 @@ async function showcurrentpage(isnext, pageidx=-1) {
             
         }
     });
+    
+    document.querySelectorAll('.videoview').forEach(vid => {
+        vid.getElementsByTagName('video')[0].addEventListener('seeked', video_onseeked_event);
 
-    let everyvideo = document.querySelectorAll('video');
-    everyvideo.forEach(vid => {
-        vid.addEventListener('seeked', video_onseeked_event);
+        // vid.addEventListener('seeked', video_onseeked_event);
         vid.addEventListener("mouseenter", eachvideo_mouseenter);
         vid.addEventListener("mouseleave", eachvideo_mouseleave);
     })
+
     if(countsforwaitingseekedvideo > 0) {
         bodybackgroundcolor_busy();
         every_input_disable = true;
@@ -701,13 +703,28 @@ function eachvideo_interval_playing_handler_elapsed() {
 }
 
 function eachvideo_mouseenter(p) {
+    // console.log(`eachvideo_mouseenter`);
+    
     if(every_input_disable) return;
 
-    video_mouseover_playing_video = p.target;
+    if(p.target.tagName == 'VIDEO')
+    {
+        video_mouseover_playing_video = p.target;
+    }
+    else
+    {
+        video_mouseover_playing_video = p.target.getElementsByTagName('video')[0];
+        video_mouseover_playing_img = p.target.getElementsByTagName('img')[0];
+    }
+    
     if(video_mouseover_staying_check_timer != null) clearTimeout(video_mouseover_staying_check_timer);
 
     video_mouseover_staying_check_timer = setTimeout(() => {
-        // console.log(`play !!! - ${video_mouseover_playing_video.src}`);
+        console.log(`play !!! - ${video_mouseover_playing_video.src}`);
+        
+        video_mouseover_playing_img.style.display='none';
+        video_mouseover_playing_video.style.display='block';
+
         video_mouseover_playing_video_playing = true;
 
         eachvideo_interval_playing_next_ready = true;
@@ -717,6 +734,7 @@ function eachvideo_mouseenter(p) {
 }
 
 function eachvideo_mouseleave(p) {
+    
     if(video_mouseover_staying_check_timer != null)
         clearTimeout(video_mouseover_staying_check_timer);
     video_mouseover_staying_check_timer = null;
@@ -734,6 +752,7 @@ function eachvideo_mouseleave(p) {
 }
 
 let video_mouseover_playing_video = null;
+let video_mouseover_playing_img = null;
 let video_mouseover_staying_check_timer = null;
 let video_mouseover_playing_video_playing = false;
 
