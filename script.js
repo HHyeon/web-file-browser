@@ -645,6 +645,15 @@ async function showcurrentpage(isnext, pageidx=-1) {
 let videoseekedindex = 0;
 
 function video_onseeked_event(video) {
+
+    if(video_mouseover_playing_show)
+    {
+        video_mouseover_playing_show = false;
+        video_mouseover_playing_img.style.display='none';
+        video_mouseover_playing_video.style.display='block';
+    }
+
+
     let name = video.target.src;
     name = name.substring(name.lastIndexOf('/')+1);
 
@@ -696,7 +705,7 @@ function eachvideo_interval_playing_handler_elapsed() {
             else {
                 video_mouseover_playing_video.currentTime += thumbnailinterval;
             }
-            
+             
             step_count = 0;
         }
     }
@@ -715,15 +724,13 @@ function eachvideo_mouseenter(p) {
     {
         video_mouseover_playing_video = p.target.getElementsByTagName('video')[0];
         video_mouseover_playing_img = p.target.getElementsByTagName('img')[0];
+        video_mouseover_playing_show = true;
     }
     
     if(video_mouseover_staying_check_timer != null) clearTimeout(video_mouseover_staying_check_timer);
 
     video_mouseover_staying_check_timer = setTimeout(() => {
         console.log(`play !!! - ${video_mouseover_playing_video.src}`);
-        
-        video_mouseover_playing_img.style.display='none';
-        video_mouseover_playing_video.style.display='block';
 
         video_mouseover_playing_video_playing = true;
 
@@ -753,6 +760,7 @@ function eachvideo_mouseleave(p) {
 
 let video_mouseover_playing_video = null;
 let video_mouseover_playing_img = null;
+let video_mouseover_playing_show = false;
 let video_mouseover_staying_check_timer = null;
 let video_mouseover_playing_video_playing = false;
 
