@@ -5,14 +5,57 @@ const thumbnailinterval = 30.0;
 const urlStr = window.location.href;
 const url = new URL(urlStr);
 const urlParams = url.searchParams;
-const parampath = urlParams.get('p');
-const paramfind = urlParams.get('f');
-const parampage = urlParams.get('g');
+
+
 const drivelist = ["drv0", "drv1", "drv2"];
+
+
+const parampath = getCookie('parampath');
+setCookie('parampath', '', 0);
+console.log(`parampath: ${parampath}`);
+
+
+const paramfind = getCookie('paramfind');
+setCookie('paramfind', '', 0);
+console.log(`paramfind: ${paramfind}`);
+
+
+const parampage = getCookie('parampage');
+setCookie('parampage', '', 0);
+console.log(`parampage: ${parampage}`);
+
+
+const ismixedlist = getCookie('listmixnext') == 'true';
+setCookie('makelistmix', '', 0);
+
+
 
 const input_search = document.querySelector(".input_search");
 let input_search_typing = false;
 let every_input_disable = false;
+
+
+function setCookie(cname, cvalue, exhours) {
+    const d = new Date();
+    d.setTime(d.getTime() + (exhours*60*60*1000));
+    let expires = "expires="+ d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function getCookie(cname) {
+    let name = cname + "=";
+    let ca = document.cookie.split(';');
+    for(let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
 
 document.addEventListener("mouseleave", () => {
     if(!controlpanel_force_visible)
@@ -37,6 +80,12 @@ loadinglight.addEventListener("click", () => {
     else {
         videothumbnails_updating_start();
     }
+});
+
+let listmixbutton = document.querySelector('.listmixbutton');
+listmixbutton.addEventListener("click", () => {
+    setCookie('listmixnext', 'true', 1);
+    showcurrentpage(-1); // 1 to next , 0 to prev , -1 to load current pos
 });
 
 let controlpanel_force_visible = false;
@@ -151,8 +200,10 @@ document.addEventListener("keydown", function(e) {
             // code for current-page-searssssching
             // submitsearching(input_search.value);
 
-            const nextlink = `?p=${parampath}&f=${input_search.value}`;
-            window.open(nextlink, "_blank");
+            setCookie('parampath', parampath, 1);
+            setCookie('paramfind', input_search.value, 1);
+            
+            window.open(window.location.href, "_blank");
         }
     }
 });
@@ -173,7 +224,7 @@ document.addEventListener("scroll", function(element) {
 });
 
 function nav_back() {
-    if(parampath == null) return;
+    if(parampath == '') return;
 
     if(drivelist.includes(parampath)) // reached top
     {
@@ -187,16 +238,15 @@ function nav_back() {
     }
     else
     {
+        let nextpath = parampath.substring(0, parampath.lastIndexOf('/'));
+        setCookie('parampath', nextpath, 1);
+        console.log(nextpath);
+
         if(ctrldown) {
-            let nextpath = parampath.substring(0, parampath.lastIndexOf('/'));
-            const nextlink = `?p=${nextpath}`;
-            window.open(nextlink, "_blank");
+            window.open(window.location.href, "_blank");
         }
         else {
-            let nextpath = parampath.substring(0, parampath.lastIndexOf('/'));
-            const nextlink = `?p=${nextpath}`;
-            console.log(nextlink);
-            location.replace(nextlink);
+            location.replace(window.location.href);
         }
     }
 };
@@ -233,7 +283,7 @@ btnprev.addEventListener("click", function() {
     if(every_input_disable) return;
 
     let page;
-    if(parampage != null)
+    if(parampage != '')
     {
         page = Number(parampage);
         if(page > 0) page--;
@@ -245,7 +295,7 @@ btnprev.addEventListener("click", function() {
 
     if(parseInt(dirlistshowposition/dirlistmaxshow) == 0) return;
 
-    if(parampage == null)
+    if(parampage == '')
     {
         if(page == 0) return;
     }
@@ -260,15 +310,14 @@ btnprev.addEventListener("click", function() {
     }
     else
     {
+        setCookie('parampath', parampath, 1);
+        setCookie('parampage', page, 1);
+
         if(ctrldown) {
-            const nextlink = `?p=${parampath}&g=${page}`;
-            console.log(nextlink);
-            window.open(nextlink, "_blank");
+            window.open(window.location.href, "_blank");
         }
         else {
-            const nextlink = `?p=${parampath}&g=${page}`;
-            console.log(nextlink);
-            location.replace(nextlink);
+            location.replace(window.location.href);
         }
     }
     
@@ -281,7 +330,7 @@ btnnext.addEventListener("click", function() {
     if(every_input_disable) return;
 
     let page;
-    if(parampage != null)
+    if(parampage != '')
     {
         page = Number(parampage);
         page++;
@@ -302,15 +351,14 @@ btnnext.addEventListener("click", function() {
     }
     else
     {
+        setCookie('parampath', parampath, 1);
+        setCookie('parampage', page, 1);
+
         if(ctrldown) {
-            const nextlink = `?p=${parampath}&g=${page}`;
-            console.log(nextlink);
-            window.open(nextlink, "_blank");
+            window.open(window.location.href, "_blank");
         }
         else {
-            const nextlink = `?p=${parampath}&g=${page}`;
-            console.log(nextlink);
-            location.replace(nextlink);
+            location.replace(window.location.href);
         }
     }
 
@@ -352,18 +400,16 @@ function folderclicked(element) {
     let id = element.substring(element.lastIndexOf("id")+2);
 
     const nextpath = folderslist.find(x=> x.id == id).data;
+
+    setCookie('parampath', nextpath, 1);
     
     if(ctrldown)
     {
-        const nextlink = `?p=${nextpath}`;
-        console.log(nextlink);
-        window.open(nextlink, "_blank");
+        window.open(window.location.href, "_blank");
     }
     else
     {
-        const nextlink = `?p=${nextpath}`;
-        console.log(nextlink);
-        location.replace(nextlink);
+        location.replace(window.location.href);
     }
 
 }
@@ -398,7 +444,7 @@ function mp4clicked(element) {
     
     let newpage = `./videoview.html?p=${nextpath}`;
 
-    if(paramfind != null) newpage += `&f=${paramfind}`;
+    if(paramfind != '') newpage += `&f=${paramfind}`;
 
     console.log(newpage);
     window.open(newpage, "_blank");
@@ -849,7 +895,7 @@ function extractlastnumberfromfilename(str) {
 
 async function startup() {
 
-    if(parampath != null)
+    if(parampath != '')
     {
         const jsonraw=dirseek(parampath);
         const jsondata=JSON.parse(jsonraw); 
@@ -903,7 +949,7 @@ async function startup() {
     
             const dirname = parampath.substring(parampath.lastIndexOf('/')+1);
     
-            if(paramfind != null) 
+            if(paramfind != '') 
                 title.innerText = `${dirname} - ${paramfind}`;
             else
                 title.innerText = `${dirname}/${itemcount} items`;
@@ -914,13 +960,13 @@ async function startup() {
             //     btnnext.innerText = `Next - ${idx}`;
             // }
     
-            if(paramfind != null) {
+            if(paramfind != '') {
                 submitsearching(paramfind);
             }
             else {
                 let page = -1;
     
-                if(parampage != null)
+                if(parampage != '')
                 {
                     page = Number(parampage);
                     showcurrentpage(-1, page); // 1 to next , 0 to prev , -1 to load current pos
