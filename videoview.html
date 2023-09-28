@@ -57,6 +57,29 @@
         </div>
         
         <script>
+            
+            function setCookie(cname, cvalue, exhours) {
+                const d = new Date();
+                d.setTime(d.getTime() + (exhours*60*60*1000));
+                let expires = "expires="+ d.toUTCString();
+                document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+            }
+
+            function getCookie(cname) {
+                let name = cname + "=";
+                let ca = document.cookie.split(';');
+                for(let i = 0; i < ca.length; i++) {
+                    let c = ca[i];
+                    while (c.charAt(0) == ' ') {
+                        c = c.substring(1);
+                    }
+                    if (c.indexOf(name) == 0) {
+                        return c.substring(name.length, c.length);
+                    }
+                }
+                return "";
+            }
+
             let video_saturate=1.0;
             let video_contrast=1.0;
             let video_brightness=1.0;
@@ -105,8 +128,15 @@
             const urlStr = window.location.href;
             const url = new URL(urlStr);
             const urlParams = url.searchParams;
-            const parampath = urlParams.get('p');
-            const paramfind = urlParams.get('f');
+            
+            const parampath = getCookie('parampath');
+            setCookie('parampath', '', 0);
+            console.log(`parampath: ${parampath}`);
+
+            const paramfind = getCookie('paramfind');
+            setCookie('paramfind', '', 0);
+            console.log(`paramfind: ${paramfind}`);
+
 
 
             function pauseplay() {
@@ -230,7 +260,7 @@
                             setplaytime = true;
                             console.log(`next video - ${nextvidpath}`);
 
-                            setLabelText(`random play ${currentfilename}`);
+                            setLabelText(`${currentfilename}`);
                         }
                     break;
 

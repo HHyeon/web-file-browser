@@ -20,14 +20,9 @@ setCookie('paramfind', '', 0);
 console.log(`paramfind: ${paramfind}`);
 
 
-const parampage = getCookie('parampage');
-setCookie('parampage', '', 0);
-console.log(`parampage: ${parampage}`);
-
-
-const ismixedlist = getCookie('listmixnext') == 'true';
-setCookie('makelistmix', '', 0);
-
+// const parampage = getCookie('parampage');
+// setCookie('parampage', '', 0);
+// console.log(`parampage: ${parampage}`);
 
 
 const input_search = document.querySelector(".input_search");
@@ -62,6 +57,7 @@ document.addEventListener("mouseleave", () => {
         document.querySelector('.control').style.visibility = 'hidden';
         
     ctrldown = false;
+    video_mouseover_playing_show = false;
 });
 
 document.addEventListener("mouseenter", (param) => {
@@ -84,8 +80,10 @@ loadinglight.addEventListener("click", () => {
 
 let listmixbutton = document.querySelector('.listmixbutton');
 listmixbutton.addEventListener("click", () => {
-    setCookie('listmixnext', 'true', 1);
-    showcurrentpage(-1); // 1 to next , 0 to prev , -1 to load current pos
+
+    dirlist.sort(() => Math.random() - 0.5);
+
+    showcurrentpage(-1, 0); // 1 to next , 0 to prev , -1 to load current pos
 });
 
 let controlpanel_force_visible = false;
@@ -282,44 +280,47 @@ let btnprev = document.getElementById("btnprev");
 btnprev.addEventListener("click", function() {
     if(every_input_disable) return;
 
-    let page;
-    if(parampage != '')
-    {
-        page = Number(parampage);
-        if(page > 0) page--;
-    }
-    else
-    {
-        page=0;
-    }
+    // let page;
+    // if(parampage != '')
+    // {
+    //     page = Number(parampage);
+    //     if(page > 0) page--;
+    // }
+    // else
+    // {
+    //     page=0;
+    // }
 
     if(parseInt(dirlistshowposition/dirlistmaxshow) == 0) return;
 
-    if(parampage == '')
-    {
-        if(page == 0) return;
-    }
-    else
-    {
-        if(parseInt(parampage) == page) return;
-    }
+    // if(parampage == '')
+    // {
+    //     if(page == 0) return;
+    // }
+    // else
+    // {
+    //     if(parseInt(parampage) == page) return;
+    // }
 
-    if(searchingsession)
-    {
-        showcurrentpage(0);
-    }
-    else
-    {
-        setCookie('parampath', parampath, 1);
-        setCookie('parampage', page, 1);
 
-        if(ctrldown) {
-            window.open(window.location.href, "_blank");
-        }
-        else {
-            location.replace(window.location.href);
-        }
-    }
+    showcurrentpage(0);
+
+    // if(searchingsession)
+    // {
+    //     showcurrentpage(0);
+    // }
+    // else
+    // {
+    //     setCookie('parampath', parampath, 1);
+    //     setCookie('parampage', page, 1);
+
+    //     if(ctrldown) {
+    //         window.open(window.location.href, "_blank");
+    //     }
+    //     else {
+    //         location.replace(window.location.href);
+    //     }
+    // }
     
 
     // showcurrentpage(0); // 1 to next , 0 to prev, -1 to load current pos
@@ -329,38 +330,40 @@ let btnnext = document.getElementById("btnnext");
 btnnext.addEventListener("click", function() {
     if(every_input_disable) return;
 
-    let page;
-    if(parampage != '')
-    {
-        page = Number(parampage);
-        page++;
-    }
-    else
-    {
-        page=1;
-    }
+    // let page;
+    // if(parampage != '')
+    // {
+    //     page = Number(parampage);
+    //     page++;
+    // }
+    // else
+    // {
+    //     page=1;
+    // }
     
-    if(parseInt((itemcount-1)/dirlistmaxshow) < page)
-    {
-        return;
-    }
+    // if(parseInt((itemcount-1)/dirlistmaxshow) < page)
+    // {
+    //     return;
+    // }
+    
+    showcurrentpage(1);
 
-    if(searchingsession)
-    {
-        showcurrentpage(1);
-    }
-    else
-    {
-        setCookie('parampath', parampath, 1);
-        setCookie('parampage', page, 1);
+    // if(searchingsession)
+    // {
+    //     showcurrentpage(1);
+    // }
+    // else
+    // {
+    //     setCookie('parampath', parampath, 1);
+    //     setCookie('parampage', page, 1);
 
-        if(ctrldown) {
-            window.open(window.location.href, "_blank");
-        }
-        else {
-            location.replace(window.location.href);
-        }
-    }
+    //     if(ctrldown) {
+    //         window.open(window.location.href, "_blank");
+    //     }
+    //     else {
+    //         location.replace(window.location.href);
+    //     }
+    // }
 
 
     // showcurrentpage(1); // 1 to next , 0 to prev, -1 to load current pos
@@ -440,14 +443,10 @@ function mp4clicked(element) {
     let id = element.substring(element.lastIndexOf("id")+2);
     let nextpath = thumbnailed_video_list.find(x=> x.id == id).src;
 
-    console.log(`nextpath : ${nextpath}`);
-    
-    let newpage = `./videoview.html?p=${nextpath}`;
+    setCookie('parampath',nextpath, 1);
+    if(paramfind != '') setCookie('paramfind',paramfind, 1);
 
-    if(paramfind != '') newpage += `&f=${paramfind}`;
-
-    console.log(newpage);
-    window.open(newpage, "_blank");
+    window.open('./videoview.html', "_blank");
 }
 
 let thumbnailed_video_list = [];
@@ -788,6 +787,8 @@ function eachvideo_mouseenter(p) {
 
 function eachvideo_mouseleave(p) {
     
+    video_mouseover_playing_show = false;
+    
     if(video_mouseover_staying_check_timer != null)
         clearTimeout(video_mouseover_staying_check_timer);
     video_mouseover_staying_check_timer = null;
@@ -964,17 +965,19 @@ async function startup() {
                 submitsearching(paramfind);
             }
             else {
-                let page = -1;
+                // let page = -1;
     
-                if(parampage != '')
-                {
-                    page = Number(parampage);
-                    showcurrentpage(-1, page); // 1 to next , 0 to prev , -1 to load current pos
-                }
-                else
-                {
-                    showcurrentpage(-1); // 1 to next , 0 to prev , -1 to load current pos
-                }
+                // if(parampage != '')
+                // {
+                //     page = Number(parampage);
+                //     showcurrentpage(-1, page); // 1 to next , 0 to prev , -1 to load current pos
+                // }
+                // else
+                // {
+                //     showcurrentpage(-1); // 1 to next , 0 to prev , -1 to load current pos
+                // }
+
+                showcurrentpage(-1); // 1 to next , 0 to prev , -1 to load current pos
     
             }
     
