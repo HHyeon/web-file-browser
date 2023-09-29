@@ -200,7 +200,7 @@ document.addEventListener("keydown", function(e) {
             // submitsearching(input_search.value);
 
             // setCookie('parampath', parampath, 1);
-            const nextlink = `?p=${nextpath}`;
+            const nextlink = `?p=${parampath}`;
             setCookie('paramfind', input_search.value, 1);
             
             window.open(nextlink, "_blank");
