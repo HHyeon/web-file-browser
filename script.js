@@ -9,9 +9,10 @@ const urlParams = url.searchParams;
 
 const drivelist = ["drv0", "drv1", "drv2"];
 
-
-const parampath = getCookie('parampath');
-setCookie('parampath', '', 0);
+let parampath = urlParams.get('p');
+if(parampath == null) parampath = '';
+// const parampath = getCookie('parampath');
+// setCookie('parampath', '', 0);
 console.log(`parampath: ${parampath}`);
 
 
@@ -198,10 +199,11 @@ document.addEventListener("keydown", function(e) {
             // code for current-page-searssssching
             // submitsearching(input_search.value);
 
-            setCookie('parampath', parampath, 1);
+            // setCookie('parampath', parampath, 1);
+            const nextlink = `?p=${nextpath}`;
             setCookie('paramfind', input_search.value, 1);
             
-            window.open(window.location.href, "_blank");
+            window.open(nextlink, "_blank");
         }
     }
 });
@@ -237,14 +239,16 @@ function nav_back() {
     else
     {
         let nextpath = parampath.substring(0, parampath.lastIndexOf('/'));
-        setCookie('parampath', nextpath, 1);
+        // setCookie('parampath', nextpath, 1);
         console.log(nextpath);
 
+        const nextlink = `?p=${nextpath}`;
+
         if(ctrldown) {
-            window.open(window.location.href, "_blank");
+            window.open(nextlink, "_blank");
         }
         else {
-            location.replace(window.location.href);
+            location.replace(nextlink);
         }
     }
 };
@@ -403,16 +407,17 @@ function folderclicked(element) {
     let id = element.substring(element.lastIndexOf("id")+2);
 
     const nextpath = folderslist.find(x=> x.id == id).data;
+    const nextlink = `?p=${nextpath}`;
 
-    setCookie('parampath', nextpath, 1);
+    // setCookie('parampath', nextpath, 1);
     
     if(ctrldown)
     {
-        window.open(window.location.href, "_blank");
+        window.open(nextlink, "_blank");
     }
     else
     {
-        location.replace(window.location.href);
+        location.replace(nextlink);
     }
 
 }
