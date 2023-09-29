@@ -622,58 +622,52 @@ async function showcurrentpage(isnext, pageidx=-1) {
 
     console.log(`${countsforwaitingseekedvideo} videos are started seeking`);
 
-    thumbnailed_video_list.forEach((each) => {
+
         
-        document.querySelectorAll('.videoview').forEach(view => {
-            if(each['imagedthumbnail'])
+    document.querySelectorAll('.videoview').forEach(view => {
+        let videoviewimg = view.getElementsByTagName('img')[0];
+        let videoviewvid = view.getElementsByTagName('video')[0];
+        
+        let not_found = true;
+
+        thumbnailed_video_list.forEach((each) => {
+            const p1 = decodeURI(videoviewvid.src);
+            const p2 = each['filename'];
+
+            if(p1.endsWith(p2))
             {
-                view.children[0].style.display = ''; // img 
-                view.children[1].style.display = 'none'; // video
-            }
-            else
-            {
-                view.children[0].style.display = 'none'; // img 
-                view.children[1].style.display = ''; // video
+                not_found = false;
+
+                if(each['imagedthumbnail'])
+                {
+                    videoviewimg.style.display = 'block'; // img
+                    videoviewvid.style.display = 'none'; // video
+                }
+                else
+                {
+                    videoviewimg.style.display = 'none'; // img 
+                    videoviewvid.style.display = 'block'; // video
+                    
+                    // console.log(`default seek - ${each['filename']}`);
+                    // videoviewvid.currentTime = video_default_initial_seeking;
+                    
+                    console.log(`default seek - ${each['filename']}`);
+
+                    videoviewvid.currentTime = video_default_initial_seeking;
+                }
+                        
+                videoviewvid.addEventListener('seeked', video_onseeked_event);
+                view.addEventListener("mouseenter", eachvideo_mouseenter);
+                view.addEventListener("mouseleave", eachvideo_mouseleave);
+                
             }
         });
-
-        if(!each['imagedthumbnail']) {
-            console.log(`seeking video - ${each['filename']}`);
-
-            const videoviews = document.querySelectorAll('.videoview');
-
-            let not_found = true;
-            videoviews.forEach((videoview) => {
-
-                const p1 = decodeURI(videoview.children[1].src);
-                const p2 = each['filename'];
-
-                // console.log(`p1 - ${p1}`);
-                // console.log(`p2 - ${p2}`);
-
-                if(p1.endsWith(p2)) {
-                    console.log(`default seek - ${each['filename']}`);
-                    videoview.children[0].style.visibility = 'hidden' // make img Element hidden
-                    videoview.children[1].style.visibility = '' // make video Element visible
-                    videoview.children[1].currentTime = video_default_initial_seeking;
-                    not_found = false;
-                }
-            });
-
-            if(not_found) {
-                console.log(`####################### founding Failed #######################`);
-            }
-            
+        
+        if(not_found) {
+            console.log(`####################### founding Failed #######################`);
         }
-    });
-    
-    document.querySelectorAll('.videoview').forEach(vid => {
-        vid.getElementsByTagName('video')[0].addEventListener('seeked', video_onseeked_event);
 
-        // vid.addEventListener('seeked', video_onseeked_event);
-        vid.addEventListener("mouseenter", eachvideo_mouseenter);
-        vid.addEventListener("mouseleave", eachvideo_mouseleave);
-    })
+    });
 
     if(countsforwaitingseekedvideo > 0) {
         bodybackgroundcolor_busy();
@@ -819,8 +813,11 @@ function update_next_everyvideothumbnail() {
     videoseekedindex = 0;
 
     document.querySelectorAll('.videoview').forEach(view => {
-        view.children[0].style.display = 'none'; // img 
-        view.children[1].style.display = ''; // video
+        let videoviewimg = view.getElementsByTagName('img')[0];
+        let videoviewvid = view.getElementsByTagName('video')[0];
+        
+        videoviewimg.style.display = 'none'; // img 
+        videoviewvid.style.display = ''; // video
     });
 
     thumbnailed_video_list.forEach(each => {
