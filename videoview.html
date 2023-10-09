@@ -245,22 +245,25 @@
 
                     case '\\':
                         {
-                            let randomitem;
-
-                            do
+                            if(dirlist.length > 1)
                             {
-                                randomitem = dirlist[Math.floor(Math.random()*dirlist.length)];
-                            } while(randomitem['d'] == currentfilename);
-                            currentfilename = randomitem['d'];
+                                let randomitem;
+                                do
+                                {
+                                    randomitem = dirlist[Math.floor(Math.random()*dirlist.length)];
+                                } while(randomitem['d'] == currentfilename);
+                                currentfilename = randomitem['d'];
 
-                            // console.log(`randomitem - ${currentfilename}`);
-                            
-                            const nextvidpath = currentdir + '/' + currentfilename;
-                            player.src = nextvidpath; 
-                            setplaytime = true;
-                            console.log(`next video - ${nextvidpath}`);
+                                // console.log(`randomitem - ${currentfilename}`);
 
-                            setLabelText(`${currentfilename}`);
+                                const nextvidpath = currentdir + '/' + currentfilename;
+                                player.src = nextvidpath; 
+                                setplaytime = true;
+                                console.log(`next video - ${nextvidpath}`);
+
+                                setLabelText(`${currentfilename}`);
+                                
+                            }
                         }
                     break;
 
@@ -735,7 +738,7 @@
                 
                 if(paramfind != null)
                 {
-                    console.log(`filtering by ${paramfind}`);
+                    console.log(`filtering by ${paramfind}`);   
                     
                     dirlist = dirlist.filter(e => e["d"].toUpperCase().includes(paramfind.toUpperCase()));
                 }
@@ -746,11 +749,11 @@
                 player = document.getElementById("player");
                 player.src = parampath;
                 player.addEventListener("playing", () => {
-                    console.log("!!!!!!!!!");
                     if(setplaytime)
                     {
                         setplaytime = false;
-                        player.currentTime = (player.duration / 10) * (2+Math.floor(Math.random()*6));
+                        player.currentTime = (player.duration / 10) * (1+Math.random()*3.0);
+                        console.log(player.currentTime);
                     }
                 });
 
