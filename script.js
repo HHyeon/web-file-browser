@@ -423,6 +423,37 @@ function folderclicked(element) {
 }
 
 function genfolder(ididx, param) {
+
+    const jsonraw=dirseek(param);
+    const jsondata=JSON.parse(jsonraw);
+    let randomed_imgfile = undefined;
+
+    if(jsondata["ret"])
+    {
+        const subdirlist = jsondata["data"];
+        while(true) {  
+            const find__ = subdirlist.find((a) => { return a["d"][0] == '.';});
+            if(find__ == undefined) break;
+            // console.log(`ignore - ${find__["d"]}`);
+            const idx = subdirlist.lastIndexOf(find__);
+            subdirlist.splice(idx, 1);
+        }
+
+        for(let i=0;i<subdirlist.length;i++) subdirlist[i]["t"] = Date.parse(subdirlist[i]["t"]);
+        
+        const imgfileslist = subdirlist.filter(x => 
+            x["d"].endsWith('jpeg') || 
+            x["d"].endsWith('jpg'));
+        
+        if(imgfileslist.length > 0)
+        {
+            randomed_imgfile = param + "/" + randChoice(imgfileslist)['d'];
+            // console.log(randomed_imgfile);
+            // randomed_imgfile = undefined;
+        }
+
+    }
+
     let val = param.substring(param.lastIndexOf('/')+1);
 
     let keyvalue = {
@@ -431,14 +462,31 @@ function genfolder(ididx, param) {
     };
     folderslist.push(keyvalue);
     
-    let html=`
-    <div id=id${ididx} class="diritem" onclick="folderclicked(this.id)">
-    <div class="vertical-center">
-        <h5 class="itemlabel">Directory</h5>
-        <h3 class="itemlabel">${val}</h3>
-    </div>
-    </div>
-    `;
+    let html;
+
+    if(randomed_imgfile == undefined)
+    {
+        html=`
+        <div id=id${ididx} class="diritem" onclick="folderclicked(this.id)">
+            <div class="vertical-center">
+                <h5 class="itemlabel">Directory</h5>
+                <h3 class="itemlabel">${val}</h3>
+            </div>
+        </div>
+        `;
+    }
+    else
+    {
+        html=`
+        <div id=id${ididx} class="diritem" onclick="folderclicked(this.id)" style="background-image:url('${randomed_imgfile}'); background-size: cover;">
+            <div class="vertical-center">
+                <h5 class="itemlabel">Directory</h5>
+                <h3 class="itemlabel">${val}</h3>
+            </div>
+        </div>
+        `;
+    }
+
     return html;
 }
 
@@ -508,6 +556,11 @@ async function genmp4(ididx, param) {
     });
     
 }
+
+function randChoice(arr) {
+    return arr[Math.floor(Math.random() * arr.length)]
+}
+
 
 let countsforwaitingseekedvideo = 0;
 
@@ -589,9 +642,9 @@ async function showcurrentpage(isnext, pageidx=-1) {
 
         const dot = curr.lastIndexOf('.');
 
-        if(dot < 0) // this is a folder
+        if(dot < 0) // when name have no extension
         {
-            // console.log(curr);
+            // console.log(`curr - ${curr}`);
             contents += genfolder(ididx, curr);
         }
         else
@@ -925,7 +978,7 @@ async function startup() {
             }
     
     
-            var imgfileslist = dirlist.filter(x => 
+            let imgfileslist = dirlist.filter(x => 
                 x["d"].substring(x["d"].lastIndexOf('.')+1) == 'jpeg' || 
                 x["d"].substring(x["d"].lastIndexOf('.')+1) == 'jpg'  );
             
