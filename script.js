@@ -401,7 +401,10 @@ function genimage(ididx, srcpath) {
 
 let folderslist = [];
 
-function folderclicked(element) {
+function folderclicked(event, element, withtab) {
+    
+    console.log(event);
+
     if(every_input_disable) return;
     console.log(`clicked folder ${element}`);
     let id = element.substring(element.lastIndexOf("id")+2);
@@ -411,7 +414,7 @@ function folderclicked(element) {
 
     // setCookie('parampath', nextpath, 1);
     
-    if(ctrldown)
+    if(ctrldown || withtab)
     {
         window.open(nextlink, "_blank");
     }
@@ -467,7 +470,7 @@ function genfolder(ididx, param) {
     if(randomed_imgfile == undefined)
     {
         html=`
-        <div id=id${ididx} class="diritem" onclick="folderclicked(this.id)">
+        <div id=id${ididx} class="diritem" onclick="folderclicked(event, this.id, false)" oncontextmenu="folderclicked(event, this.id, true)">
             <div class="vertical-center">
                 <h5 class="itemlabel">Directory</h5>
                 <h3 class="itemlabel">${val}</h3>
@@ -478,7 +481,7 @@ function genfolder(ididx, param) {
     else
     {
         html=`
-        <div id=id${ididx} class="diritem" onclick="folderclicked(this.id)" style="background-image:url('${randomed_imgfile}'); background-size: cover;">
+        <div id=id${ididx} class="diritem" onclick="folderclicked(event, this.id, false)" oncontextmenu="folderclicked(event, this.id, true)" style="background-image:url('${randomed_imgfile}'); background-size: cover;">
             <div class="vertical-center">
                 <h5 class="itemlabel">Directory</h5>
                 <h3 class="itemlabel">${val}</h3>
