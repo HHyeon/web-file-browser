@@ -41,7 +41,7 @@ if(isset($_GET["x"]))
         $jsonresult["ret"]=TRUE;
     }
 
-    closedir($path);
+    closedir($dirhandle);
 
 
 }
