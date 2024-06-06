@@ -481,7 +481,7 @@ function genfolder(ididx, param) {
     else
     {
         html=`
-        <div id=id${ididx} class="diritem" onclick="folderclicked(event, this.id, false)" oncontextmenu="folderclicked(event, this.id, true)" style="background-image:url('${randomed_imgfile}'); background-size: cover;">
+        <div id=id${ididx} class="diritem" onclick="folderclicked(event, this.id, false)" oncontextmenu="folderclicked(event, this.id, true)" style="background-image:url('${randomed_imgfile}'); background-size: cover; background-position: center">
             <div class="vertical-center">
                 <h5 class="itemlabel">Directory</h5>
                 <h3 class="itemlabel">${val}</h3>
@@ -644,6 +644,8 @@ async function showcurrentpage(isnext, pageidx=-1) {
         curr += `${fname}`;
 
         const dot = curr.lastIndexOf('.');
+
+        if(curr.endsWith('lnk')) continue;
 
         if(dot < 0) // when name have no extension
         {
