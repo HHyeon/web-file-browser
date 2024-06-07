@@ -16,9 +16,14 @@ if(parampath == null) parampath = '';
 console.log(`parampath: ${parampath}`);
 
 
+const sortfactorstored = getCookie(`${parampath}_sortfactor`);
+console.log(`sortfactorstored - ${sortfactorstored}`);
+const pagestored = getCookie(`${parampath}_page`);
+console.log(`pagestored - ${pagestored}`);
+
 const paramfind = getCookie('paramfind');
-setCookie('paramfind', '', 0);
-console.log(`paramfind: ${paramfind}`);
+console.log(`paramfind - ${paramfind}`);
+setCookie('paramfind', '', 0); //Clear Setted Cookie
 
 
 // const parampage = getCookie('parampage');
@@ -32,10 +37,10 @@ let every_input_disable = false;
 
 
 function setCookie(cname, cvalue, exhours) {
-    const d = new Date();
-    d.setTime(d.getTime() + (exhours*60*60*1000));
-    let expires = "expires="+ d.toUTCString();
-    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    // const d = new Date();
+    // d.setTime(d.getTime() + (exhours*60*60*1000));
+    // let expires = "expires="+ d.toUTCString();
+    document.cookie = cname + "=" + cvalue;// + ";" + expires + ";path=/";
 }
 
 function getCookie(cname) {
@@ -53,6 +58,25 @@ function getCookie(cname) {
     return "";
 }
 
+function seededRandom(seed) {
+    let value = seed % 2147483647;
+    if (value <= 0) value += 2147483646;
+  
+    return function() {
+      value = (value * 16807) % 2147483647;
+      return (value - 1) / 2147483646;
+    };
+  }
+
+function shuffleArray(array, seed) {
+    const random = seededRandom(seed);
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+  
 document.addEventListener("mouseleave", () => {
     if(!controlpanel_force_visible)
         document.querySelector('.control').style.visibility = 'hidden';
@@ -82,7 +106,13 @@ loadinglight.addEventListener("click", () => {
 let listmixbutton = document.querySelector('.listmixbutton');
 listmixbutton.addEventListener("click", () => {
 
-    dirlist.sort(() => Math.random() - 0.5);
+    const sortfactor = Math.floor(Math.random() * 10000);
+
+    setCookie(`${parampath}_sortfactor`, sortfactor, 0);
+    // console.log(`sortfactor - ${sortfactor}`);
+
+    dirlist.sort((a,b) => { return b["t"] - a["t"]; });
+    shuffleArray(dirlist, sortfactor);
 
     showcurrentpage(-1, 0); // 1 to next , 0 to prev , -1 to load current pos
 });
@@ -614,6 +644,7 @@ async function showcurrentpage(isnext, pageidx=-1) {
     }
     
     let currpageidx = parseInt(dirlistshowposition/dirlistmaxshow);
+    setCookie(`${parampath}_page`, currpageidx);
     btnprev.innerText = `Prev - ${currpageidx}`;
     btnnext.innerText = `Next - ${maxpageidx - currpageidx}`;
 
@@ -717,9 +748,9 @@ async function showcurrentpage(isnext, pageidx=-1) {
                     console.log(`default seek - ${each['filename']}`);
 
                     videoviewvid.currentTime = video_default_initial_seeking;
+                    videoviewvid.addEventListener('seeked', video_onseeked_event);
                 }
                         
-                videoviewvid.addEventListener('seeked', video_onseeked_event);
                 view.addEventListener("mouseenter", eachvideo_mouseenter);
                 view.addEventListener("mouseleave", eachvideo_mouseleave);
                 
@@ -989,25 +1020,33 @@ async function startup() {
             
             if(imgfileslist.length == 0)
             {
-                console.log("Sort by Time !!!!");
+                // console.log("Sort by Time !!!!");
                 dirlist.sort((a,b) => { return b["t"] - a["t"]; });
             }
             else
             {
+
                 if(imgfileslist.length / dirlist.length > 0.5) // check the Ratio of Image File and another File
                 {
-                    console.log("Sort by Name !!!!");
+                    // console.log("Sort by Name !!!!");
                     dirlist.sort((a,b) => {
                         return extractlastnumberfromfilename(a["d"]) - extractlastnumberfromfilename(b["d"]);
                     });
                 }
                 else
                 {
-                    console.log("Sort by Time !!!!");
+                    // console.log("Sort by Time !!!!");
                     dirlist.sort((a,b) => { return b["t"] - a["t"]; });
                 }
+
             }
-    
+            
+            if(sortfactorstored != '')
+            {
+                shuffleArray(dirlist, sortfactorstored);
+            }
+            
+            
             const dirname = parampath.substring(parampath.lastIndexOf('/')+1);
     
             if(paramfind != '') 
@@ -1037,7 +1076,16 @@ async function startup() {
                 //     showcurrentpage(-1); // 1 to next , 0 to prev , -1 to load current pos
                 // }
 
-                showcurrentpage(-1); // 1 to next , 0 to prev , -1 to load current pos
+                if(pagestored != '')
+                {
+                    // console.log(`Show Page ${pagestored}!`);
+                    showcurrentpage(-1, pagestored);
+                }
+                else
+                {
+                    // console.log("Show First Page!");
+                    showcurrentpage(-1); // 1 to next , 0 to prev , -1 to load current pos
+                }
     
             }
     
@@ -1069,7 +1117,7 @@ function video_to_image_base64(video) {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-    const scale = 0.7;
+    const scale = 0.5;
     const canvasValue = canvas.toDataURL('image/jpeg', scale); // Base64 저장 - 0 ~ 1 퀄리티 범위
     return canvasValue;
 }
